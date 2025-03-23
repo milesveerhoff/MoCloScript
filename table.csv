@@ -1,5 +1,0 @@
-Sequence,Bin,Start,End,Length,Orientation,Type IIS enzyme,Fragment production method,Status,,Total
-pAGM1299,Backbone,2830,2231,2247,Forward,BbsI,Use existing cut sites,Success,,2845
-AFB1_CDS2ns,Insert 1,12,1767,1756,Forward,BbsI,Use existing cut sites,Success,,1785
-AFB2_CDS2ns,Insert 1,13,1738,1726,Forward,BbsI,Use existing cut sites,Success,,1756
-TIR1_CDS2ns,Insert 1,13,1795,1783,Forward,BbsI,Use existing cut sites,Success,,1811
