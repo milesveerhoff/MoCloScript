@@ -4,12 +4,13 @@ from tkinter import filedialog
 
 # Template script with placeholders
 template_script = """
-from opentrons import protocol_api
+from opentrons import protocol_api # type: ignore
 
 metadata = {{"apiLevel": "2.16"}}
 
-# Tube rack locations of inserts
+# Fragments and constructs
 inserts = {inserts}
+constructs = {constructs}
 
 # Tube rack locations of reagents
 backbone = "{backbone}"
@@ -43,7 +44,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
     # Distribute reagents to tubes based on the corresponding inserts from the constructs CSV file
     for index, reaction_tube in enumerate(reaction_tubes):
-        construct_inserts = {constructs}[index]  # Get inserts for the current construct
+        construct_inserts = constructs[index]  # Get inserts for the current construct
         for insert in construct_inserts:
             insert_location = inserts[insert]  # Get the location of the insert
             pipette.transfer(vol_per_insert, tube_rack[insert_location], tube_rack[reaction_tube])
@@ -111,16 +112,14 @@ def load_data_and_display_confirmation():
 def display_confirmation_window(constructs_df, num_inserts, insert_locations, vol_h2o_list):
     global confirmation_window, file_name_entry
     confirmation_window = tk.Tk()
-    confirmation_window.title("Confirm Script Generation")
-    confirmation_window.geometry("600x500")
+    confirmation_window.title("Confirm Placements")
+    # confirmation_window.geometry("600x500")
     confirmation_window.configure(padx=20, pady=20)
 
     # Display confirmation message with details
     confirmation_message = (
-        f"Constructs Loaded:\n{constructs_df}\n\n"
-        f"Number of Inserts: {num_inserts}\n\n"
-        f"Insert Locations:\n{insert_locations}\n\n"
-        f"Volume of H2O per construct:\n{vol_h2o_list}\n\n"
+        f"Loaded {len(constructs_df)} constructs using {path_constructs} and\n{num_inserts} fragments using {path_fragments}.\n\n"
+        f"Place the following tubes in their respective locations:\n{insert_locations}\n\n"
         "Are you ready to generate the script?"
     )
     label_confirmation = tk.Label(confirmation_window, text=confirmation_message, justify=tk.LEFT)
@@ -168,7 +167,7 @@ path_constructs = ""
 # Create the main window
 root = tk.Tk()
 root.title("File Input")
-root.geometry("600x300")
+# root.geometry("600x300")
 root.configure(padx=20, pady=20)
 
 # Create labels and buttons to open the file dialogs

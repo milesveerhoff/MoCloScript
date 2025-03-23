@@ -1,4 +1,4 @@
-from opentrons import protocol_api
+from opentrons import protocol_api # type: ignore
 
 metadata = {"apiLevel": "2.16"}
 

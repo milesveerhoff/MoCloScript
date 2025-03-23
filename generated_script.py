@@ -1,10 +1,11 @@
 
-from opentrons import protocol_api
+from opentrons import protocol_api # type: ignore
 
 metadata = {"apiLevel": "2.16"}
 
-# Tube rack locations of inserts
+# Fragments and constructs
 inserts = {'Lvl 1 GFP Dropout L2RE': 'A1', 'pYTK014': 'A2', 'pYTK017': 'A3', 'pYTK027': 'A4', 'pYSD021': 'A5', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon": 'A6', 'pYSD085': 'B1', 'pYTK065': 'B2'}
+constructs = [['Lvl 1 GFP Dropout L2RE', 'pYTK014', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK017', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK027', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065']]
 
 # Tube rack locations of reagents
 backbone = "B3"
@@ -38,7 +39,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
     # Distribute reagents to tubes based on the corresponding inserts from the constructs CSV file
     for index, reaction_tube in enumerate(reaction_tubes):
-        construct_inserts = [['Lvl 1 GFP Dropout L2RE', 'pYTK014', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK017', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK027', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065']][index]  # Get inserts for the current construct
+        construct_inserts = constructs[index]  # Get inserts for the current construct
         for insert in construct_inserts:
             insert_location = inserts[insert]  # Get the location of the insert
             pipette.transfer(vol_per_insert, tube_rack[insert_location], tube_rack[reaction_tube])
