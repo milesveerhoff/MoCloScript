@@ -90,8 +90,8 @@ def load_data_and_display_confirmation():
     # Extract constructs as a list of lists and get construct names if available
     constructs = [row[1:].tolist() for _, row in constructs_df.iterrows()]
     
-    if 'Construct Name' in constructs_df.columns:
-        construct_names = constructs_df['Construct Name'].tolist()
+    if 'Name' in constructs_df.columns:
+        construct_names = constructs_df['Name'].tolist()
     else:
         construct_names = [f"Construct {i+1}" for i in range(len(constructs))]
 
@@ -110,13 +110,13 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
 
     # Create a readable format for tube placements
     tube_placements = (
-        f"Buffer: **{buffer}**\n"
-        f"Assembly Mix: **{assembly_mix}**\n"
-        f"Sterile DI H2O: **{h2o}**\n\n"
         "Fragments:\n" +
-        "\n".join([f"{insert}: **{location}**" for insert, location in insert_locations.items()]) +
-        "\n\nConstruct Tubes:\n" +
-        "\n".join([f"{construct_names[i]}: **{location}**" for i, location in enumerate(construct_tubes)])
+        "\n".join([f"[{location}]: {insert}" for insert, location in insert_locations.items()]) +
+        f"\n\n[{buffer}]: Buffer\n"
+        f"[{assembly_mix}]: Assembly Mix\n"
+        f"[{h2o}]: Sterile DI Water\n"
+        "\nConstruct Tubes:\n" +
+        "\n".join([f"[{location}]: {construct_names[i]}" for i, location in enumerate(construct_tubes)])
     )
 
     # Display confirmation message with details
