@@ -73,13 +73,13 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
     confirmation_window.configure(padx=20, pady=20)
 
     # Create a readable format for tube placements
+    global tube_placements
     tube_placements = (
-        "Fragments:\n" +
         "\n".join([f"[{location}]: {insert}" for insert, location in insert_locations.items()]) +
         f"\n\n[{buffer}]: Buffer\n"
         f"[{assembly_mix}]: Assembly Mix\n"
         f"[{h2o}]: Sterile DI Water\n"
-        "\nConstruct Tubes:\n" +
+        "\n" +
         "\n".join([f"[{location}]: {construct_names[i]}" for i, location in enumerate(construct_tubes)])
     )
 
@@ -111,6 +111,7 @@ def generate_script(file_name_entry):
 
     # Fill in the template for the output protocol
     script = template_script.format(
+        tube_placements=tube_placements,
         inserts=insert_locations,
         buffer=buffer,
         assembly_mix=assembly_mix,

@@ -1,3 +1,7 @@
+'''
+{tube_placements}
+'''
+
 from opentrons import protocol_api # type: ignore
 metadata = {{"apiLevel": "2.16"}}
 # Fragments and constructs
