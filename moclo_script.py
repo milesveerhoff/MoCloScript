@@ -1,22 +1,20 @@
 from opentrons import protocol_api # type: ignore
-metadata = {"apiLevel": "2.16"}
-metadata["description"] = '''
-[A1]: Lvl 1 GFP Dropout L2RE,
-[A2]: pYTK014,
-[A3]: pYTK017,
-[A4]: pYTK027,
-[A5]: pYSD021,
-[A6]: HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon,
-[B1]: pYSD085,
-[B2]: pYTK065,
+metadata = {"apiLevel": "2.16", "description": '''[A1]: Lvl 1 GFP Dropout L2RE, 
+[A2]: pYTK014, 
+[A3]: pYTK017, 
+[A4]: pYTK027, 
+[A5]: pYSD021, 
+[A6]: HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon, 
+[B1]: pYSD085, 
+[B2]: pYTK065, 
 
-[B3]: Buffer,
-[B4]: Assembly Mix,
-[B5]: Sterile DI Water,
+[B3]: Buffer, 
+[B4]: Assembly Mix, 
+[B5]: Sterile DI Water, 
 
-[B6]: OLD pWL-591 Lvl 1 GFP Dropout L2RE-pYTK014-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065,
-[C1]: OLD pWL-590 Lvl 1 GFP Dropout L2RE-pYTK017-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065,
-[C2]: OLD pWL-589 Lvl 1 GFP Dropout L2RE-pYTK027-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065,'''
+[B6]: OLD pWL-591 Lvl 1 GFP Dropout L2RE-pYTK014-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, 
+[C1]: OLD pWL-590 Lvl 1 GFP Dropout L2RE-pYTK017-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, 
+[C2]: OLD pWL-589 Lvl 1 GFP Dropout L2RE-pYTK027-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, '''}
 # Fragments and constructs
 inserts = {'Lvl 1 GFP Dropout L2RE': 'A1', 'pYTK014': 'A2', 'pYTK017': 'A3', 'pYTK027': 'A4', 'pYSD021': 'A5', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon": 'A6', 'pYSD085': 'B1', 'pYTK065': 'B2'}
 constructs = [['Lvl 1 GFP Dropout L2RE', 'pYTK014', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK017', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK027', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065']]

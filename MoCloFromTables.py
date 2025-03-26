@@ -75,12 +75,12 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
     # Create a readable format for tube placements
     global tube_placements
     tube_placements = (
-        "\n".join([f"[{location}]: {insert}," for insert, location in insert_locations.items()]) +
-        f"\n\n[{buffer}]: Buffer,\n"
-        f"[{assembly_mix}]: Assembly Mix,\n"
-        f"[{h2o}]: Sterile DI Water,\n"
+        "\n".join([f"[{location}]: {insert}, " for insert, location in insert_locations.items()]) +
+        f"\n\n[{buffer}]: Buffer, \n"
+        f"[{assembly_mix}]: Assembly Mix, \n"
+        f"[{h2o}]: Sterile DI Water, \n"
         "\n" +
-        "\n".join([f"[{location}]: {construct_names[i]}," for i, location in enumerate(construct_tubes)])
+        "\n".join([f"[{location}]: {construct_names[i]}, " for i, location in enumerate(construct_tubes)])
     )
 
     # Display confirmation message with details

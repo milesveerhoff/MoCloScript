@@ -1,7 +1,5 @@
 from opentrons import protocol_api # type: ignore
-metadata = {{"apiLevel": "2.16"}}
-metadata["description"] = '''
-{tube_placements}'''
+metadata = {{"apiLevel": "2.16", "description": '''{tube_placements}'''}}
 # Fragments and constructs
 inserts = {inserts}
 constructs = {constructs}
