@@ -26,7 +26,7 @@ def run(protocol: protocol_api.ProtocolContext):
     p300 = protocol.load_instrument("p300_single_gen2", "right", tip_racks=[tips300])
     p20 = protocol.load_instrument("p20_single_gen2", "left", tip_racks=[tips20])
 
-    def pipette_transfer(vol, source, dest, pipette):
+    def pipette_transfer(vol, source, dest, pipette=None):
         if pipette is not None:
             pipette.transfer(vol, source, dest)
         else:
