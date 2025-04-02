@@ -40,13 +40,15 @@ def load_data_and_display_confirmation():
     num_inserts = len(fragments)
 
     # Define locations based on the number of inserts
-    locations = [f"{chr(65 + i // 6)}{i % 6 + 1}" for i in range(num_inserts + len(constructs_df) + 4)]
+    locations = [f"{chr(65 + i // 4)}{i % 6 + 1}" for i in range(24)]
     inserts = locations[:num_inserts]
     remaining_locations = locations[num_inserts:]
     buffer = remaining_locations[0]
     assembly_mix = remaining_locations[1]
     h2o = remaining_locations[2]
-    construct_tubes = remaining_locations[3:3+len(constructs_df)]
+    
+    #Assign locations in thermocycler to constructs
+    construct_tubes = [f"{chr(65 + i // 8)}{i % 6 + 1}" for i in range(len(constructs_df))]
 
     # Create a dictionary mapping insert names to their locations
     insert_locations = {fragments.iloc[i, 0]: inserts[i] for i in range(num_inserts)}
@@ -79,7 +81,7 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
         f"\n\n[{buffer}]: Buffer, \n"
         f"[{assembly_mix}]: Assembly Mix, \n"
         f"[{h2o}]: Sterile DI Water, \n"
-        "\n" +
+        "\nPlace PCR tubes into the following locations in the thermocycler module:\n" +
         "\n".join([f"[{location}]: {construct_names[i]}, " for i, location in enumerate(construct_tubes)])
     )
 
