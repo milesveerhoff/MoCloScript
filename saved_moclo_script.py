@@ -1,25 +1,41 @@
 import opentrons.execute # type: ignore
 from opentrons import protocol_api # type: ignore
-metadata = {{"apiLevel": "2.16", "description": '''{tube_placements}'''}}
+metadata = {"apiLevel": "2.16", "description": '''[A1]: Lvl 1 GFP Dropout L2RE, 
+[A2]: pYTK014, 
+[A3]: pYTK017, 
+[A4]: pYTK027, 
+[A5]: pYSD021, 
+[A6]: HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon, 
+[B1]: pYSD085, 
+[B2]: pYTK065, 
+
+[B3]: Buffer, 
+[B4]: Assembly Mix, 
+[B5]: Sterile DI Water, 
+
+Constructs will be built at the following locations in the thermocycler module:
+[A1]: OLD pWL-591 Lvl 1 GFP Dropout L2RE-pYTK014-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, 
+[A2]: OLD pWL-590 Lvl 1 GFP Dropout L2RE-pYTK017-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, 
+[A3]: OLD pWL-589 Lvl 1 GFP Dropout L2RE-pYTK027-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, '''}
 
 # Fragments and constructs
-inserts = {inserts} # type: ignore
-constructs = {constructs} # type: ignore
+inserts = {'Lvl 1 GFP Dropout L2RE': 'A1', 'pYTK014': 'A2', 'pYTK017': 'A3', 'pYTK027': 'A4', 'pYSD021': 'A5', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon": 'A6', 'pYSD085': 'B1', 'pYTK065': 'B2'} # type: ignore
+constructs = [['Lvl 1 GFP Dropout L2RE', 'pYTK014', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK017', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK027', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065']] # type: ignore
 
 # Tube rack locations of reagents
-buffer = "{buffer}"
-assembly_mix = "{assembly_mix}"
-h2o = "{h2o}"
+buffer = "B3"
+assembly_mix = "B4"
+h2o = "B5"
 reagent_tubes = [buffer, assembly_mix, h2o] + list(inserts.values())
 
 # Reaction Tube Locations
-construct_tubes = {construct_tubes} # type: ignore
+construct_tubes = ['A1', 'A2', 'A3'] # type: ignore
 
 # Define volumes, in uL
 vol_buffer = 1
 vol_assembly_mix = 1
-vol_h2o = {vol_h2o} # type: ignore
-vol_per_insert = {vol_per_insert} # type: ignore
+vol_h2o = [44.0, 44.0, 44.0] # type: ignore
+vol_per_insert = 0.5 # type: ignore
 volumes = [vol_buffer, vol_assembly_mix] + [vol_per_insert] * len(inserts)
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -73,7 +89,7 @@ def run(protocol: protocol_api.ProtocolContext):
             insert_location = inserts[insert]  # Get the location of the insert
             pipette_transfer(vol_per_insert, tube_rack[insert_location], tc_plate[construct_tube])
     
-    pause(f"Place Assembly Mix in [{{tube_rack[assembly_mix]}}] and Buffer in [{{tube_rack[buffer]}}] and press RESUME.")
+    pause(f"Place Assembly Mix in [{tube_rack[assembly_mix]}] and Buffer in [{tube_rack[buffer]}] and press RESUME.")
 
     # Distribute buffer and assembly mix to thermocycler tubes
     for index, construct_tube in enumerate(construct_tubes):

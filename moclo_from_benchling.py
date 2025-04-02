@@ -40,7 +40,7 @@ def load_data_and_display_confirmation():
     num_inserts = len(fragments)
 
     # Define locations based on the number of inserts
-    locations = [f"{chr(65 + i // 4)}{i % 6 + 1}" for i in range(24)]
+    locations = [f"{chr(65 + i // 6)}{i % 6 + 1}" for i in range(24)]
     inserts = locations[:num_inserts]
     remaining_locations = locations[num_inserts:]
     buffer = remaining_locations[0]
@@ -48,7 +48,7 @@ def load_data_and_display_confirmation():
     h2o = remaining_locations[2]
     
     #Assign locations in thermocycler to constructs
-    construct_tubes = [f"{chr(65 + i // 8)}{i % 6 + 1}" for i in range(len(constructs_df))]
+    construct_tubes = [f"{chr(65 + i // 12)}{i % 12 + 1}" for i in range(len(constructs_df))]
 
     # Create a dictionary mapping insert names to their locations
     insert_locations = {fragments.iloc[i, 0]: inserts[i] for i in range(num_inserts)}
@@ -77,11 +77,11 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
     # Create a readable format for tube placements
     global tube_placements
     tube_placements = (
-        "\n".join([f"[{location}]: {insert}, " for insert, location in insert_locations.items()]) +
+        "\nPlace tubes in the following locations:\n".join([f"[{location}]: {insert}, " for insert, location in insert_locations.items()]) +
         f"\n\n[{buffer}]: Buffer, \n"
         f"[{assembly_mix}]: Assembly Mix, \n"
         f"[{h2o}]: Sterile DI Water, \n"
-        "\nPlace PCR tubes into the following locations in the thermocycler module:\n" +
+        "\nConstructs will be built at the following locations in the thermocycler module:\n" +
         "\n".join([f"[{location}]: {construct_names[i]}, " for i, location in enumerate(construct_tubes)])
     )
 
@@ -100,7 +100,7 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
     file_name_label = tk.Label(confirmation_window, text="File will be saved in the same directory as this script, and overwrite files with the same name.\nEnter name to save file as:")
     file_name_label.pack(pady=5)
     file_name_entry = tk.Entry(confirmation_window)
-    file_name_entry.insert(0, "moclo_script.py")  # Default value
+    file_name_entry.insert(0, "saved_moclo_script.py")  # Default value
     file_name_entry.pack(pady=5)
 
     # Confirm button to generate the script
