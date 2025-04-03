@@ -20,12 +20,12 @@ vol_buffer = 1
 vol_assembly_mix = 1
 vol_h2o = {vol_h2o} # type: ignore
 vol_per_insert = {vol_per_insert} # type: ignore
-volumes = [vol_buffer, vol_assembly_mix] + [vol_per_insert] * len(inserts)
+volumes = [vol_h2o] + [vol_buffer, vol_assembly_mix] + [vol_per_insert] * len(inserts)
 
 # Thermocycler settings
 reaction_temp = {reaction_temp} # type: ignore
 inactivation_temp = {inactivation_temp} # type: ignore
-reaction_vol = sum(volumes) + vol_h2o # Total volume of the reaction
+reaction_vol = sum(volumes) # Total volume of the reaction
 
 def run(protocol: protocol_api.ProtocolContext):
     # Define labware
