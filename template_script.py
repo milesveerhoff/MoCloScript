@@ -20,12 +20,12 @@ vol_buffer = 1
 vol_assembly_mix = 1
 vol_h2o = {vol_h2o} # type: ignore
 vol_per_insert = {vol_per_insert} # type: ignore
-volumes = [vol_h2o] + [vol_buffer, vol_assembly_mix] + [vol_per_insert] * len(inserts)
+volumes = [vol_buffer, vol_assembly_mix] + [vol_per_insert] * len(inserts)
 
 # Thermocycler settings
 reaction_temp = {reaction_temp} # type: ignore
 inactivation_temp = {inactivation_temp} # type: ignore
-reaction_vol = sum(volumes) # Total volume of the reaction
+reaction_vol = 40 # Total volume of the reaction
 
 def run(protocol: protocol_api.ProtocolContext):
     # Define labware
@@ -110,6 +110,8 @@ def run(protocol: protocol_api.ProtocolContext):
     tc_mod.set_block_temperature(temperature=4, hold_time_seconds=60) # 1 min
     tc_mod.deactivate_lid() # Deactivate lid to allow for pipetting
     protocol.delay(seconds=5) # Wait for lid to cool down
+
+    pause("Thermocycler protocol complete. Press continue to open thermocycler lid.")
     tc_mod.open_lid() # Open lid for pipetting
 
     
