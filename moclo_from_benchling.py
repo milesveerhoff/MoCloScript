@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 # Template script with placeholders
-template_script = open("TemplateScript.py").read()
+template_script = open("template_script.py").read()
 
 def select_file_1():
     global path_fragments
