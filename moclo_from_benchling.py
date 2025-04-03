@@ -103,6 +103,18 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
     file_name_entry.insert(0, "saved_moclo_script.py")  # Default value
     file_name_entry.pack(pady=5)
 
+    # Input box for thermocycler temps
+    tc_temp_label = tk.Label(confirmation_window, text="Enter the Reaction and Inactivation temperatures (in °C) for thermocycler protocol:\n\nReaction Temp:")
+    tc_temp_label.pack(pady=5)
+    tc_temp_activation = tk.Entry(confirmation_window)
+    tc_temp_activation.insert(0, "37")  # Default value
+    tc_temp_activation.pack(pady=5)
+    tc_temp_label2 = tk.Label(confirmation_window, text="Inactivation Temp:")
+    tc_temp_label2.pack(pady=5)
+    tc_temp_inactivation = tk.Entry(confirmation_window)
+    tc_temp_inactivation.insert(0, "65")  # Default value
+    tc_temp_inactivation.pack(pady=5)
+
     # Confirm button to generate the script
     confirm_button = tk.Button(confirmation_window, text="Confirm", command=lambda: generate_script(file_name_entry))
     confirm_button.pack(pady=20)
@@ -120,7 +132,7 @@ def generate_script(file_name_entry):
         h2o=h2o,
         construct_tubes=construct_tubes,
         vol_h2o=vol_h2o_list,
-        vol_per_insert=0.5,
+        vol_per_insert=1,
         constructs=constructs
     )
 

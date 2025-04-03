@@ -22,6 +22,11 @@ vol_h2o = {vol_h2o} # type: ignore
 vol_per_insert = {vol_per_insert} # type: ignore
 volumes = [vol_buffer, vol_assembly_mix] + [vol_per_insert] * len(inserts)
 
+# Thermocycler settings
+reaction_temp = {reaction_temp} # type: ignore
+inactivation_temp = {inactivation_temp} # type: ignore
+reaction_vol = sum(volumes) + vol_h2o # Total volume of the reaction
+
 def run(protocol: protocol_api.ProtocolContext):
     # Define labware
     tips300 = protocol.load_labware("opentrons_96_tiprack_300ul", "9")
@@ -81,6 +86,30 @@ def run(protocol: protocol_api.ProtocolContext):
         pipette_transfer(vol_assembly_mix, tube_rack[assembly_mix], tc_plate[construct_tube])
 
     tc_mod.close_lid()
-    tc_mod.set_lid_temperature(temperature=80)
+
+    '''
+    Thermocycler protocol based on BsaI test protocol, variables passed from script generation
+    ----------------------
+    Lid: inactivation_temp + 10C
+    Volume: reaction_vol
+    1. reaction_temp, 15min
+    2. reaction_temp, 1.5min
+    3. 16C, 3min
+    4. GOTO step 2, 25x
+    5. 50C, 10min
+    6. inactivation_temp, 10min
+    7. 4C, 1min, open lid
+    '''    
+    tc_mod.set_lid_temperature(temperature=(inactivation_temp + 10))
+    tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=900, block_max_volume=reaction_vol) # 15 min
+    for i in range(25):
+        tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=90, block_max_volume=reaction_vol) # 1.5 min
+        tc_mod.set_block_temperature(temperature=16, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
+    tc_mod.set_block_temperature(temperature=50, hold_time_seconds=300, block_max_volume=reaction_vol) # 10 min
+    tc_mod.set_block_temperature(temperature=inactivation_temp, hold_time_seconds=600, block_max_volume=reaction_vol) # 10 min
+    tc_mod.set_block_temperature(temperature=4, hold_time_seconds=60) # 1 min
+    tc_mod.deactivate_lid() # Deactivate lid to allow for pipetting
+    protocol.delay(seconds=5) # Wait for lid to cool down
+    tc_mod.open_lid() # Open lid for pipetting
 
     
