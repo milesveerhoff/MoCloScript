@@ -61,13 +61,13 @@ def load_data_and_display_confirmation():
     else:
         construct_names = [f"Construct {i+1}" for i in range(len(constructs))]
 
-    # Calculate the volume of h2o needed for each construct to reach 50 uL after other volumes have been added
-    vol_h2o_list = [50 - (1 + 1 + 1 + len(construct) * 0.5) for construct in constructs]
+    # Calculate the volume of h2o needed for each construct to reach 40 uL after other volumes have been added
+    vol_h2o_list = [40 - (1 + 1 + 1 + len(construct) * 0.5) for construct in constructs]
 
     # Display the confirmation window
-    display_confirmation_window(constructs_df, num_inserts, insert_locations, vol_h2o_list, construct_tubes, construct_names)
+    display_confirmation_window(constructs_df, num_inserts, insert_locations, construct_tubes, construct_names)
 
-def display_confirmation_window(constructs_df, num_inserts, insert_locations, vol_h2o_list, construct_tubes, construct_names):
+def display_confirmation_window(constructs_df, num_inserts, insert_locations, construct_tubes, construct_names):
     global confirmation_window, file_name_entry
     confirmation_window = tk.Tk()
     confirmation_window.title("Confirm Placements")
@@ -77,7 +77,7 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
     # Create a readable format for tube placements
     global tube_placements
     tube_placements = (
-        "\nPlace tubes in the following locations:\n".join([f"[{location}]: {insert}, " for insert, location in insert_locations.items()]) +
+        "\n".join([f"[{location}]: {insert}, " for insert, location in insert_locations.items()]) +
         f"\n\n[{buffer}]: Buffer, \n"
         f"[{assembly_mix}]: Assembly Mix, \n"
         f"[{h2o}]: Sterile DI Water, \n"
@@ -96,13 +96,6 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
     label_confirmation = tk.Label(confirmation_window, text=confirmation_message, justify=tk.LEFT)
     label_confirmation.pack(pady=10)
 
-    # Input box for file name with default value
-    file_name_label = tk.Label(confirmation_window, text="File will be saved in the same directory as this script, and overwrite files with the same name.\nEnter name to save file as:")
-    file_name_label.pack(pady=5)
-    file_name_entry = tk.Entry(confirmation_window)
-    file_name_entry.insert(0, "saved_moclo_script.py")  # Default value
-    file_name_entry.pack(pady=5)
-
     # Input box for thermocycler temps
     tc_temp_label = tk.Label(confirmation_window, text="Enter the Reaction and Inactivation temperatures (in °C) for thermocycler protocol:\n\nReaction Temp:")
     tc_temp_label.pack(pady=5)
@@ -115,11 +108,18 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, vo
     tc_temp_inactivation.insert(0, "65")  # Default value
     tc_temp_inactivation.pack(pady=5)
 
+    # Input box for file name with default value
+    file_name_label = tk.Label(confirmation_window, text="File will be saved in the same directory as this script, and overwrite files with the same name.\nEnter name to save file as:")
+    file_name_label.pack(pady=5)
+    file_name_entry = tk.Entry(confirmation_window)
+    file_name_entry.insert(0, "saved_moclo_script.py")  # Default value
+    file_name_entry.pack(pady=5)
+
     # Confirm button to generate the script
-    confirm_button = tk.Button(confirmation_window, text="Confirm", command=lambda: generate_script(file_name_entry))
+    confirm_button = tk.Button(confirmation_window, text="Confirm", command=lambda: generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation))
     confirm_button.pack(pady=20)
 
-def generate_script(file_name_entry):
+def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation):
     # Get the file name from the input box
     file_name = file_name_entry.get()
 
@@ -133,6 +133,8 @@ def generate_script(file_name_entry):
         construct_tubes=construct_tubes,
         vol_h2o=vol_h2o_list,
         vol_per_insert=1,
+        reaction_temp=tc_temp_activation.get(),
+        inactivation_temp=tc_temp_inactivation.get(),
         constructs=constructs
     )
 
