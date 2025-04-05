@@ -61,8 +61,8 @@ def load_data_and_display_confirmation():
     else:
         construct_names = [f"Construct {i+1}" for i in range(len(constructs))]
 
-    # Calculate the volume of h2o needed for each construct to reach 40 uL after other volumes have been added
-    vol_h2o_list = [40 - (1 + 1 + 1 + len(construct) * 0.5) for construct in constructs]
+    # Calculate the volume of h2o needed for each construct to reach 50 uL after other volumes have been added
+    vol_h2o_list = [50 - 6 - len(construct) for construct in constructs]
 
     # Display the confirmation window
     display_confirmation_window(constructs_df, num_inserts, insert_locations, construct_tubes, construct_names)
@@ -71,8 +71,24 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, co
     global confirmation_window, file_name_entry
     confirmation_window = tk.Tk()
     confirmation_window.title("Confirm Placements")
-    # confirmation_window.geometry("600x500") # Optional: Set window size
     confirmation_window.configure(padx=20, pady=20)
+
+    # Create a canvas and scrollbar for scrollable content
+    canvas = tk.Canvas(confirmation_window)
+    scrollbar = tk.Scrollbar(confirmation_window, orient="vertical", command=canvas.yview)
+    scrollable_frame = tk.Frame(canvas)
+
+    # Configure the canvas to work with the scrollbar
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    # Pack the canvas and scrollbar
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
 
     # Create a readable format for tube placements
     global tube_placements
@@ -93,30 +109,30 @@ def display_confirmation_window(constructs_df, num_inserts, insert_locations, co
         f"{tube_placements}\n\n"
         "Are you ready to generate the script?"
     )
-    label_confirmation = tk.Label(confirmation_window, text=confirmation_message, justify=tk.LEFT)
+    label_confirmation = tk.Label(scrollable_frame, text=confirmation_message, justify=tk.LEFT, wraplength=500)
     label_confirmation.pack(pady=10)
 
     # Input box for thermocycler temps
-    tc_temp_label = tk.Label(confirmation_window, text="Enter the Reaction and Inactivation temperatures (in °C) for thermocycler protocol:\n\nReaction Temp:")
+    tc_temp_label = tk.Label(scrollable_frame, text="Enter the Reaction and Inactivation temperatures (in °C) for thermocycler protocol:\n\nReaction Temp:")
     tc_temp_label.pack(pady=5)
-    tc_temp_activation = tk.Entry(confirmation_window)
+    tc_temp_activation = tk.Entry(scrollable_frame)
     tc_temp_activation.insert(0, "37")  # Default value
     tc_temp_activation.pack(pady=5)
-    tc_temp_label2 = tk.Label(confirmation_window, text="Inactivation Temp:")
+    tc_temp_label2 = tk.Label(scrollable_frame, text="Inactivation Temp:")
     tc_temp_label2.pack(pady=5)
-    tc_temp_inactivation = tk.Entry(confirmation_window)
+    tc_temp_inactivation = tk.Entry(scrollable_frame)
     tc_temp_inactivation.insert(0, "65")  # Default value
     tc_temp_inactivation.pack(pady=5)
 
     # Input box for file name with default value
-    file_name_label = tk.Label(confirmation_window, text="File will be saved in the same directory as this script, and overwrite files with the same name.\nEnter name to save file as:")
+    file_name_label = tk.Label(scrollable_frame, text="File will be saved in the same directory as this script, and overwrite files with the same name.\nEnter name to save file as:")
     file_name_label.pack(pady=5)
-    file_name_entry = tk.Entry(confirmation_window)
+    file_name_entry = tk.Entry(scrollable_frame)
     file_name_entry.insert(0, "saved_moclo_script.py")  # Default value
     file_name_entry.pack(pady=5)
 
     # Confirm button to generate the script
-    confirm_button = tk.Button(confirmation_window, text="Confirm", command=lambda: generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation))
+    confirm_button = tk.Button(scrollable_frame, text="Confirm", command=lambda: generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation))
     confirm_button.pack(pady=20)
 
 def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation):

@@ -16,7 +16,7 @@ reagent_tubes = [buffer, assembly_mix, h2o] + list(inserts.values())
 construct_tubes = {construct_tubes} # type: ignore
 
 # Define volumes, in uL
-vol_buffer = 1
+vol_buffer = 5
 vol_assembly_mix = 1
 vol_h2o = {vol_h2o} # type: ignore
 vol_per_insert = {vol_per_insert} # type: ignore
@@ -98,7 +98,7 @@ def run(protocol: protocol_api.ProtocolContext):
     4. GOTO step 2, 25x
     5. 50C, 10min
     6. inactivation_temp, 10min
-    7. 4C, 1min, open lid
+    7. 4C, 1 hour, open lid
     '''    
     tc_mod.set_lid_temperature(temperature=(inactivation_temp + 10))
     tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=900, block_max_volume=reaction_vol) # 15 min
@@ -107,7 +107,7 @@ def run(protocol: protocol_api.ProtocolContext):
         tc_mod.set_block_temperature(temperature=16, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
     tc_mod.set_block_temperature(temperature=50, hold_time_seconds=300, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=inactivation_temp, hold_time_seconds=600, block_max_volume=reaction_vol) # 10 min
-    tc_mod.set_block_temperature(temperature=4, hold_time_seconds=60) # 1 min
+    tc_mod.set_block_temperature(temperature=4, hold_time_seconds=3600) # 1 hour
     tc_mod.deactivate_lid() # Deactivate lid to allow for pipetting
     protocol.delay(seconds=5) # Wait for lid to cool down
 

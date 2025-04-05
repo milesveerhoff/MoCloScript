@@ -1,4 +1,3 @@
-
 import os
 import pandas as pd
 
@@ -12,36 +11,27 @@ def parse_csv(path=os.getcwd(), file_name="table.csv"):
 
         row_count = sum(1 for row in lines)
 
-        fragments_read = pd.read_csv(os.path.join(path,file), skiprows=0, nrows=row_count)
-
-        # print(fragments_read)
+        fragments_read = pd.read_csv(os.path.join(path, file), skiprows=0, nrows=row_count)
 
         if fragments_read is not None:
             
-            #These values are not present in the downloaded tables, this is only a placeholder
+            # These values are not present in the downloaded tables, this is only a placeholder
             total_lengths = fragments_read["Total"]
-            
             insert_lengths = fragments_read["Length"]
 
-            stock_vol = 0.5 * 10**-6 #ul
-            total_mol = 50 * 10**-15 #fmol
+            stock_vol = 0.5 * 10**-6  # ul
+            total_mol = 50 * 10**-15  # fmol
 
             output_df = pd.DataFrame()
             output_values = [id for id in range(0, row_count - 1)]
 
             for i in output_values:
-
                 moles_liter = total_mol / stock_vol
                 con_g_L_bp = 650 * moles_liter
                 length_total = total_lengths[i]
                 length_insert = insert_lengths[i]
                 bp_ratio = length_insert / length_total
                 needed_conc = 10**3 * (length_total * con_g_L_bp) / bp_ratio 
-
-
-                # plasmid_dna_ng = stock_vol * final_stock_conc_ngul
-                # fragments_ng = plasmid_dna_ng / (total_lengths[i] / insert_lengths[i])
-                # total_fmol = (650 * 0.000001 * insert_lengths[i])
 
                 output_values[i] = needed_conc
             
@@ -52,8 +42,10 @@ def parse_csv(path=os.getcwd(), file_name="table.csv"):
             output_df["Stock Volume L"] = [stock_vol for id in range(0, row_count - 1)]
             output_df["Final Stock Concentration ng/ul"] = output_values
 
-            print(output_df)
-            
+            # Save the resulting dataframe as a CSV file
+            output_csv_path = os.path.join(path, "output_concentration.csv")
+            output_df.to_csv(output_csv_path, index=False)
+            print(f"Output saved to {output_csv_path}")
 
         else:
             return
