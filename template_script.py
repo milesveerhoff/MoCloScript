@@ -1,6 +1,6 @@
 import opentrons.execute # type: ignore
 from opentrons import protocol_api # type: ignore
-metadata = {{"apiLevel": "2.16", "description": '''{tube_placements}'''}}
+metadata = {{"apiLevel": "2.22", "description": '''{tube_placements}'''}}
 
 # Fragments and constructs
 inserts = {inserts} # type: ignore
@@ -41,6 +41,26 @@ def run(protocol: protocol_api.ProtocolContext):
     "opentrons_24_aluminumblock_nest_1.5ml_screwcap"
     )
 
+    # Initialize pipettes
+    p300 = protocol.load_instrument("p300_single_gen2", "right", tip_racks=[tips300])
+    p20 = protocol.load_instrument("p20_single_gen2", "left", tip_racks=[tips20])
+
+    # Initialize thermocycler
+    tc_mod.open_lid()
+
+    # Tip tracking
+
+
+    # Pippette transfer function to handle both pipettes
+    def pipette_transfer(vol, source, dest, pipette=None):
+        if pipette is not None:
+            pipette.transfer(vol, source, dest)
+        else:
+            if vol < 20:
+                p20.transfer(vol, source, dest)
+            else:
+                p300.transfer(vol, source, dest)
+    
     # Blink and pause function
     def pause(message):
         for i in range(3):
@@ -50,22 +70,6 @@ def run(protocol: protocol_api.ProtocolContext):
             protocol.delay(seconds=0.3)
         protocol.set_rail_lights(True)
         protocol.pause(message)
-
-    # Initialize pipettes
-    p300 = protocol.load_instrument("p300_single_gen2", "right", tip_racks=[tips300])
-    p20 = protocol.load_instrument("p20_single_gen2", "left", tip_racks=[tips20])
-
-    # Initialize thermocycler
-    tc_mod.open_lid()
-
-    def pipette_transfer(vol, source, dest, pipette=None):
-        if pipette is not None:
-            pipette.transfer(vol, source, dest)
-        else:
-            if vol < 20:
-                p20.transfer(vol, source, dest)
-            else:
-                p300.transfer(vol, source, dest)
     
     # Distribute water to tubes
     for index, construct_tube in enumerate(construct_tubes):
@@ -78,7 +82,7 @@ def run(protocol: protocol_api.ProtocolContext):
             insert_location = inserts[insert]  # Get the location of the insert
             pipette_transfer(vol_per_insert, tube_rack[insert_location], tc_plate[construct_tube])
     
-    pause(f"Place Assembly Mix in [{{tube_rack[assembly_mix]}}] and Buffer in [{{tube_rack[buffer]}}] and press RESUME.")
+    pause(f"Place Assembly Mix in [{{tube_rack[assembly_mix]}}] and Buffer in [{{tube_rack[buffer]}}] and press continue. Thermocycler protocol will begin after pipetting.")
 
     # Distribute buffer and assembly mix to thermocycler tubes
     for index, construct_tube in enumerate(construct_tubes):
