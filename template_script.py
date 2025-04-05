@@ -12,7 +12,7 @@ assembly_mix = "{assembly_mix}"
 h2o = "{h2o}"
 reagent_tubes = [buffer, assembly_mix, h2o] + list(inserts.values())
 
-# Reaction Tube Locations
+# Construct Tube Locations
 construct_tubes = {construct_tubes} # type: ignore
 
 # Define volumes, in uL
@@ -49,7 +49,8 @@ def run(protocol: protocol_api.ProtocolContext):
     tc_mod.open_lid()
 
     # Tip tracking
-
+    n_tip20 = 0
+    n_tip300 = 0
 
     # Pippette transfer function to handle both pipettes
     def pipette_transfer(vol, source, dest, pipette=None):
@@ -58,8 +59,18 @@ def run(protocol: protocol_api.ProtocolContext):
         else:
             if vol < 20:
                 p20.transfer(vol, source, dest)
+
+                n_tip20 += 1
+                if n_tip20 >= 96:
+                    pause("Protocol has run out of tips, replace the 20 uL tip rack.")
+                    n_tip20 = 0
             else:
                 p300.transfer(vol, source, dest)
+
+                n_tip300 += 1
+                if n_tip300 >= 96:
+                    pause("Protocol has run out of tips, replace the 300 uL tip rack.")
+                    n_tip300 = 0
     
     # Blink and pause function
     def pause(message):
