@@ -1,0 +1,97 @@
+Plasmid name,Part Type,Plasmid Description,Antibiotic resistance,Addgene ID,Plate position
+pMYT001,2,pZ3,Chloramphenicol,180654,A1
+pMYT002,2,pLacD,Chloramphenicol,180655,A2
+pMYT003,2,pLacE,Chloramphenicol,180656,A3
+pMYT004,2,pLacC,Chloramphenicol,180657,A4
+pMYT005,2,pLacFEC,Chloramphenicol,180658,A5
+pMYT006,2,pLacHTA1,Chloramphenicol,203322,A6
+pMYT007,2,pLacFBA1,Chloramphenicol,180660,A7
+pMYT008,2,pLacENO2,Chloramphenicol,180661,A8
+pMYT009,2,pLacSpTDH3,Chloramphenicol,180662,A9
+pMYT010,2,pTet2,Chloramphenicol,180663,A10
+pMYT011,2,pTet3,Chloramphenicol,180664,A11
+pMYT012,2,pTet4,Chloramphenicol,180665,A12
+pMYT013,2,pTet5,Chloramphenicol,180666,B1
+pMYT014,2,pTet6,Chloramphenicol,180667,B2
+pMYT015,2,pTet7,Chloramphenicol,180668,B3
+pMYT016,3,Z3EV,Chloramphenicol,180669,B4
+pMYT017,3,Lacl,Chloramphenicol,180670,B5
+pMYT018,3,rtTA,Chloramphenicol,180671,B6
+pMYT019,3,mScarlet-l,Chloramphenicol,180672,B7
+pMYT020,3,mNeonGreen,Chloramphenicol,180673,B8
+pMYT021,3,mTagBFP2,Chloramphenicol,180674,B9
+pMYT022,4a,mScarlet-l,Chloramphenicol,180675,B10
+pMYT023,4a,mNeonGreen,Chloramphenicol,180676,B11
+pMYT024,4a,mTagBFP2,Chloramphenicol,180677,B12
+pMYT025,4,tTDH3,Chloramphenicol,180678,C1
+pMYT026,4,tTEF1,Chloramphenicol,180679,C2
+pMYT027,4,tTDH2,Chloramphenicol,180680,C3
+pMYT028,4,tPDC1,Chloramphenicol,180681,C4
+pMYT029,N/A,URA3,Chloramphenicol,180682,C5
+pMYT030,N/A,LEU2,Chloramphenicol,180683,C6
+pMYT031,N/A,HIS3,Chloramphenicol,180684,C7
+pMYT032,N/A,TRP1,Chloramphenicol,180685,C8
+pMYT033,N/A,MET17,Chloramphenicol,180686,C9
+pMYT034,N/A,LYS2,Chloramphenicol,180687,C10
+pMYT035,N/A,KanR,Chloramphenicol,180688,C11
+pMYT036,N/A,NatR,Chloramphenicol,180689,C12
+pMYT037,N/A,HygR,Chloramphenicol,180690,D1
+pMYT038,N/A,ZeoR,Chloramphenicol,180691,D2
+pMYT039,N/A,S/1 Assembly Cassette,Ampicillin,180692,D3
+pMYT040,N/A,1/E Assembly Cassette,Ampicillin,180693,D4
+pMYT041,N/A,1/2 Assembly Cassette,Ampicillin,180694,D5
+pMYT042,N/A,2/E Assembly Cassette,Ampicillin,180695,D6
+pMYT043,N/A,2/3 Assembly Cassette,Ampicillin,180696,D7
+pMYT044,N/A,3/E Assembly Cassette,Ampicillin,180697,D8
+pMYT045,N/A,3/4 Assembly Cassette,Ampicillin,180698,D9
+pMYT046,N/A,4/E Assembly Cassette,Ampicillin,180699,D10
+pMYT047,N/A,4/5 Assembly Cassette,Ampicillin,180700,D11
+pMYT048,N/A,5/E Assembly Cassette,Ampicillin,180701,D12
+pMYT049,N/A,5/6 Assembly Cassette,Ampicillin,180702,E1
+pMYT050,N/A,6/E Assembly Cassette,Ampicillin,180703,E2
+pMYT051,N/A,6/7 Assembly Cassette,Ampicillin,180704,E3
+pMYT052,N/A,7/E Assembly Cassette,Ampicillin,180705,E4
+pMYT053,N/A,7/8 Assembly Cassette,Ampicillin,180706,E5
+pMYT054,N/A,8/E Assembly Cassette,Ampicillin,180707,E6
+pMYT055,N/A,8/9 Assembly Cassette,Ampicillin,180708,E7
+pMYT056,N/A,9/E Assembly Cassette,Ampicillin,180709,E8
+pMYT057,N/A,S/1 Spacer Cassette,Ampicillin,180710,E9
+pMYT058,N/A,1/E Spacer Cassette,Ampicillin,180711,E10
+pMYT059,N/A,1/2 Spacer Cassette,Ampicillin,180712,E11
+pMYT060,N/A,2/E Spacer Cassette,Ampicillin,180713,E12
+pMYT061,N/A,2/3 Spacer Cassette,Ampicillin,180714,F1
+pMYT062,N/A,3/E Spacer Cassette,Ampicillin,180715,F2
+pMYT063,N/A,3/4 Spacer Cassette,Ampicillin,180716,F3
+pMYT064,N/A,4/E Spacer Cassette,Ampicillin,180717,F4
+pMYT065,N/A,4/5 Spacer Cassette,Ampicillin,180718,F5
+pMYT066,N/A,5/E Spacer Cassette,Ampicillin,180719,F6
+pMYT067,N/A,5/6 Spacer Cassette,Ampicillin,180720,F7
+pMYT068,N/A,6/E Spacer Cassette,Ampicillin,180721,F8
+pMYT069,N/A,6/7 Spacer Cassette,Ampicillin,180722,F9
+pMYT070,N/A,7/E Spacer Cassette,Ampicillin,180723,F10
+pMYT071,N/A,7/8 Spacer Cassette,Ampicillin,180724,F11
+pMYT072,N/A,8/E Spacer Cassette,Ampicillin,180725,F12
+pMYT073,N/A,8/9 Spacer Cassette,Ampicillin,180726,G1
+pMYT074,N/A,9/E Spacer Cassette,Ampicillin,180727,G2
+pMYT075,N/A,Int.1 Vector,Kanamycin,180728,G3
+pMYT076,N/A,Int.2 Vector,Kanamycin,180729,G4
+pMYT077,N/A,Int.3 Vector,Kanamycin,180730,G5
+pMYT078,N/A,Int.4 Vector,Kanamycin,180731,G6
+pMYT079,N/A,Int.5 Vector,Kanamycin,180732,G7
+pMYT080,N/A,Int.6 Vector,Kanamycin,180733,G8
+pMYT081,N/A,Int.7 Vector,Kanamycin,180734,G9
+pMYT082,N/A,Int.8 Vector,Kanamycin,198864,G10
+pMYT083,N/A,Int.9 Vector,Kanamycin,180736,G11
+pMYT084,N/A,Int.10 Vector,Kanamycin,180737,G12
+pMYT085,N/A,Int.1 Spacer,Kanamycin,180738,H1
+pMYT086,N/A,Int.2 Spacer,Kanamycin,180739,H2
+pMYT087,N/A,Int.3 Spacer,Kanamycin,180740,H3
+pMYT088,N/A,Int.4 Spacer,Kanamycin,180741,H4
+pMYT089,N/A,Int.5 Spacer,Kanamycin,180742,H5
+pMYT090,N/A,Int.6 Spacer,Kanamycin,180743,H6
+pMYT091,N/A,Int.7 Spacer,Kanamycin,180744,H7
+pMYT092,N/A,Int.8 Spacer,Kanamycin,198865,H8
+pMYT093,N/A,Int.9 Spacer,Kanamycin,180746,HY
+pMYT094,N/A,Int.10 Spacer,Kanamycin,180747,H10
+pMYT095,N/A,URA3 CRISPR Vector,Spectinomycin,198866,H11
+pMYT096,N/A,Transient CRISPR Vector,Spectinomycin,198867,H12
