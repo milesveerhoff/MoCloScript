@@ -171,6 +171,13 @@ def display_confirmation_window(
     label_confirmation = tk.Label(scrollable_frame, text=confirmation_message, justify=tk.LEFT, wraplength=500)
     label_confirmation.pack(pady=10)
 
+    # Input box for total reaction volume
+    reaction_vol_label = tk.Label(scrollable_frame, text="Total reaction volume per construct (µL):")
+    reaction_vol_label.pack(pady=5)
+    reaction_vol_entry = tk.Entry(scrollable_frame)
+    reaction_vol_entry.insert(0, "50")  # Default value
+    reaction_vol_entry.pack(pady=5)
+
     # --- Excess percentage input and live update (moved below info) ---
     excess_label = tk.Label(scrollable_frame, text="Excess percentage for master mix (e.g., 5 for 5%):")
     excess_label.pack(pady=5)
@@ -185,12 +192,21 @@ def display_confirmation_window(
             excess_percent = float(excess_entry.get())
         except Exception:
             excess_percent = 5.0
+        try:
+            reaction_vol = float(reaction_vol_entry.get())
+        except Exception:
+            reaction_vol = 50.0
         n_reactions = len(constructs)
         vol_buffer = 5
         vol_assembly_mix = 1
         vol_per_insert = 1
-        vol_h2o_list = [50 - (vol_buffer + vol_assembly_mix + len(construct)*vol_per_insert) for construct in constructs]
-        vol_master_mix_per_reaction = [vol_buffer + vol_assembly_mix + vol_h2o for vol_h2o in vol_h2o_list]
+        vol_h2o_list = [
+            reaction_vol - (vol_buffer + vol_assembly_mix + len(construct) * vol_per_insert)
+            for construct in constructs
+        ]
+        vol_master_mix_per_reaction = [
+            vol_buffer + vol_assembly_mix + vol_h2o for vol_h2o in vol_h2o_list
+        ]
         vol_master_mix = sum(vol_master_mix_per_reaction)
         vol_master_mix_total = int(vol_master_mix * (1 + excess_percent / 100) + 0.5)
         buffer_total = vol_buffer * n_reactions * (1 + excess_percent / 100)
@@ -205,6 +221,7 @@ def display_confirmation_window(
             f"  Water: {h2o_total:.2f} uL"
         )
     excess_entry.bind("<KeyRelease>", update_mm_info)
+    reaction_vol_entry.bind("<KeyRelease>", update_mm_info)
     update_mm_info()  # Initialize with default
 
     mm_info_label = tk.Label(scrollable_frame, textvariable=mm_info_var, justify=tk.LEFT, wraplength=500)
@@ -233,24 +250,35 @@ def display_confirmation_window(
     confirm_button = tk.Button(
         scrollable_frame,
         text="Confirm",
-        command=lambda: generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry)
+        command=lambda: generate_script(
+            file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry, reaction_vol_entry
+        )
     )
     confirm_button.pack(pady=20)
 
-def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry):
+def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry, reaction_vol_entry):
     file_name = file_name_entry.get()
     try:
         excess_percent = float(excess_entry.get())
     except Exception:
         excess_percent = 5.0  # fallback to default if invalid
+    try:
+        reaction_vol = float(reaction_vol_entry.get())
+    except Exception:
+        reaction_vol = 50.0  # fallback to default if invalid
 
-    # Recalculate master mix volumes with the user-specified excess percentage
     n_reactions = len(constructs)
     vol_buffer = 5
     vol_assembly_mix = 1
     vol_per_insert = 1
-    vol_h2o_list = [50 - (vol_buffer + vol_assembly_mix + len(construct)*vol_per_insert) for construct in constructs]
-    vol_master_mix_per_reaction = [vol_buffer + vol_assembly_mix + vol_h2o for vol_h2o in vol_h2o_list]
+    # Use reaction_vol instead of 50
+    vol_h2o_list = [
+        reaction_vol - (vol_buffer + vol_assembly_mix + len(construct) * vol_per_insert)
+        for construct in constructs
+    ]
+    vol_master_mix_per_reaction = [
+        vol_buffer + vol_assembly_mix + vol_h2o for vol_h2o in vol_h2o_list
+    ]
     vol_master_mix = sum(vol_master_mix_per_reaction)
     vol_master_mix_total = int(vol_master_mix * (1 + excess_percent / 100) + 0.5)
     buffer_total = vol_buffer * n_reactions * (1 + excess_percent / 100)

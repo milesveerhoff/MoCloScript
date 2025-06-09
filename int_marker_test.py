@@ -1,25 +1,42 @@
 import opentrons.execute # type: ignore
 from opentrons import protocol_api # type: ignore
-metadata = {{"apiLevel": "2.22", "description": '''{tube_placements}'''}}
+metadata = {"apiLevel": "2.22", "description": '''[C7] (MYT Plate): pMYT031_nan_HIS3, 
+[C8] (MYT Plate): pMYT032_nan_TRP1, 
+[C12] (MYT Plate): pMYT036_nan_NatR, 
+[D1] (MYT Plate): pMYT037_nan_HygR, 
+[G9] (MYT Plate): pMYT081_nan_Int7_Vector, 
+[G11] (MYT Plate): pMYT083_nan_Int9_Vector, 
+
+[A1]: Master Mix (MM), 
+
+Constructs will be built at the following locations in the thermocycler module:
+[A1]: pMYT081_nan_Int7_Vector-pMYT031_nan_HIS3, 
+[A2]: pMYT081_nan_Int7_Vector-pMYT032_nan_TRP1, 
+[A3]: pMYT081_nan_Int7_Vector-pMYT036_nan_NatR, 
+[A4]: pMYT081_nan_Int7_Vector-pMYT037_nan_HygR, 
+[A5]: pMYT083_nan_Int9_Vector-pMYT031_nan_HIS3, 
+[A6]: pMYT083_nan_Int9_Vector-pMYT032_nan_TRP1, 
+[A7]: pMYT083_nan_Int9_Vector-pMYT036_nan_NatR, 
+[A8]: pMYT083_nan_Int9_Vector-pMYT037_nan_HygR, '''}
 
 # Fragments and constructs
-inserts = {inserts} # type: ignore
-constructs = {constructs} # type: ignore
+inserts = {'pMYT031_nan_HIS3': ('myt_plate', 'C7'), 'pMYT032_nan_TRP1': ('myt_plate', 'C8'), 'pMYT036_nan_NatR': ('myt_plate', 'C12'), 'pMYT037_nan_HygR': ('myt_plate', 'D1'), 'pMYT081_nan_Int7_Vector': ('myt_plate', 'G9'), 'pMYT083_nan_Int9_Vector': ('myt_plate', 'G11')} # type: ignore
+constructs = [['pMYT081_nan_Int7_Vector', 'pMYT031_nan_HIS3'], ['pMYT081_nan_Int7_Vector', 'pMYT032_nan_TRP1'], ['pMYT081_nan_Int7_Vector', 'pMYT036_nan_NatR'], ['pMYT081_nan_Int7_Vector', 'pMYT037_nan_HygR'], ['pMYT083_nan_Int9_Vector', 'pMYT031_nan_HIS3'], ['pMYT083_nan_Int9_Vector', 'pMYT032_nan_TRP1'], ['pMYT083_nan_Int9_Vector', 'pMYT036_nan_NatR'], ['pMYT083_nan_Int9_Vector', 'pMYT037_nan_HygR']] # type: ignore
 
 # Tube rack locations of reagents
-master_mix = f'{master_mix}' # type: ignore
+master_mix = 'A1' # type: ignore
 reagent_tubes = [master_mix] + list(inserts.values())
 
 # Construct Tube Locations
-construct_tubes = {construct_tubes} # type: ignore
+construct_tubes = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8'] # type: ignore
 
 # Define volumes, in uL
-vol_master_mix_per_reaction = {vol_master_mix_per_reaction} # type: ignore
-vol_per_insert = {vol_per_insert} # type: ignore
+vol_master_mix_per_reaction = [30, 30, 30, 30, 30, 30, 30, 30] # type: ignore
+vol_per_insert = 10 # type: ignore
 
 # Thermocycler settings
-reaction_temp = {reaction_temp} # type: ignore
-inactivation_temp = {inactivation_temp} # type: ignore
+reaction_temp = 37 # type: ignore
+inactivation_temp = 65 # type: ignore
 reaction_vol = 40 # Total volume of the reaction
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -49,12 +66,12 @@ def run(protocol: protocol_api.ProtocolContext):
         master_mix_reservoir = protocol.load_labware("nest_12_reservoir_15ml", "5")  # Use slot 5 for master mix
     tc_mod = protocol.load_module(module_name="thermocyclerModuleV2")
     tc_plate = tc_mod.load_labware(name="opentrons_96_wellplate_200ul_pcr_full_skirt")
-    temp_mod = protocol.load_module(
-        module_name="temperature module gen2", location="4"
-    )
-    temp_tubes = temp_mod.load_labware(
-        "opentrons_24_aluminumblock_nest_1.5ml_screwcap"
-    )
+    # temp_mod = protocol.load_module(
+    #     module_name="temperature module gen2", location="4"
+    # )
+    # temp_tubes = temp_mod.load_labware(
+    #     "opentrons_24_aluminumblock_nest_1.5ml_screwcap"
+    # )
     # Load MYT plate if needed
     try:
         myt_plate = protocol.load_labware("nest_96_wellplate_200ul_flat", "2")
@@ -72,7 +89,7 @@ def run(protocol: protocol_api.ProtocolContext):
     total_p300_tips = sum(1 for v in vol_master_mix_per_reaction if v >= 20)
     if total_p20_tips > 96 or total_p300_tips > 96:
         raise Exception(
-            f"Not enough tips: Need {total_p20_tips} x 20uL tips and {total_p300_tips} x 300uL tips, "
+            f"Not enough tips: Need 16 x 20uL tips and 8 x 300uL tips, "
             "but only 96 of each are loaded. Please add more tip racks or reduce the number of reactions."
         )
 
@@ -135,7 +152,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 # Default: use tube rack
                 pipette_transfer(vol_per_insert, tube_rack[insert_location], tc_plate[construct_tube])
 
-    pause(f"Place Master Mix in [{{tube_rack[master_mix]}}] and press continue. Thermocycler protocol will begin after pipetting.")
+    pause(f"Place Master Mix in [{tube_rack[master_mix]}] and press continue. Thermocycler protocol will begin after pipetting.")
 
     tc_mod.close_lid()
 
