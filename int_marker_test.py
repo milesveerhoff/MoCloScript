@@ -60,18 +60,19 @@ def run(protocol: protocol_api.ProtocolContext):
     tips300_racks = [protocol.load_labware("opentrons_96_tiprack_300ul", slot) for slot in p300_slots]
 
     # Load other labware
-    tube_rack = protocol.load_labware("opentrons_24_tuberack_nest_1.5ml_snapcap", "1")
+    # tube_rack = protocol.load_labware("opentrons_24_tuberack_nest_1.5ml_snapcap", "1")
     use_reservoir_for_mm = sum(vol_master_mix_per_reaction) > 1000
     if use_reservoir_for_mm:
         master_mix_reservoir = protocol.load_labware("nest_12_reservoir_15ml", "5")  # Use slot 5 for master mix
     tc_mod = protocol.load_module(module_name="thermocyclerModuleV2")
     tc_plate = tc_mod.load_labware(name="opentrons_96_wellplate_200ul_pcr_full_skirt")
-    # temp_mod = protocol.load_module(
-    #     module_name="temperature module gen2", location="4"
-    # )
-    # temp_tubes = temp_mod.load_labware(
-    #     "opentrons_24_aluminumblock_nest_1.5ml_screwcap"
-    # )
+    temp_mod = protocol.load_module(
+        module_name="temperature module gen2", location="4"
+    )
+    temp_tubes = temp_mod.load_labware(
+        "opentrons_24_aluminumblock_nest_1.5ml_screwcap"
+    )
+    tube_rack = temp_tubes
     # Load MYT plate if needed
     try:
         myt_plate = protocol.load_labware("nest_96_wellplate_200ul_flat", "2")
@@ -116,24 +117,53 @@ def run(protocol: protocol_api.ProtocolContext):
         protocol.set_rail_lights(True)
         protocol.pause(message)
 
-    # Distribute master mix to tubes
-    for index, construct_tube in enumerate(construct_tubes):
-        # Use reservoir for MM if total MM volume > 1000 uL, else use tube_rack as before
-        if use_reservoir_for_mm:
-            if isinstance(master_mix, (tuple, list)):
-                _, well = master_mix
-                pipette_transfer(vol_master_mix_per_reaction[index], master_mix_reservoir[well], tc_plate[construct_tube])
-            else:
-                pipette_transfer(vol_master_mix_per_reaction[index], master_mix_reservoir[master_mix], tc_plate[construct_tube])
+    # Distribute master mix to tubes using multi-dispense (one tip per batch)
+    def distribute_master_mix(volumes, source, dest_wells, pipette):
+        """
+        volumes: list of volumes to dispense to each destination
+        source: source well
+        dest_wells: list of destination wells
+        pipette: pipette object (p20 or p300)
+        """
+        pipette.pick_up_tip()
+        for vol, dest in zip(volumes, dest_wells):
+            pipette.aspirate(vol, source)
+            pipette.dispense(vol, dest)
+        pipette.drop_tip()
+
+    # Decide which pipette to use for each batch based on volume
+    # Group wells by pipette type (p20 for <20uL, p300 for >=20uL)
+    wells_p20 = []
+    vols_p20 = []
+    wells_p300 = []
+    vols_p300 = []
+    for idx, vol in enumerate(vol_master_mix_per_reaction):
+        if vol < 20:
+            wells_p20.append(tc_plate[construct_tubes[idx]])
+            vols_p20.append(vol)
         else:
-            if isinstance(master_mix, (tuple, list)):
-                plate_type, well = master_mix
-                if plate_type == "myt_plate" and myt_plate is not None:
-                    pipette_transfer(vol_master_mix_per_reaction[index], myt_plate[well], tc_plate[construct_tube])
-                else:
-                    pipette_transfer(vol_master_mix_per_reaction[index], tube_rack[well], tc_plate[construct_tube])
+            wells_p300.append(tc_plate[construct_tubes[idx]])
+            vols_p300.append(vol)
+
+    # Use the correct source for master mix
+    if use_reservoir_for_mm:
+        mm_source = master_mix_reservoir[master_mix] if not isinstance(master_mix, (tuple, list)) else master_mix_reservoir[master_mix[1]]
+    else:
+        if isinstance(master_mix, (tuple, list)):
+            plate_type, well = master_mix
+            if plate_type == "myt_plate" and myt_plate is not None:
+                mm_source = myt_plate[well]
             else:
-                pipette_transfer(vol_master_mix_per_reaction[index], tube_rack[master_mix], tc_plate[construct_tube])
+                mm_source = tube_rack[well]
+        else:
+            mm_source = tube_rack[master_mix]
+
+    # Distribute with p20
+    if wells_p20:
+        distribute_master_mix(vols_p20, mm_source, wells_p20, p20)
+    # Distribute with p300
+    if wells_p300:
+        distribute_master_mix(vols_p300, mm_source, wells_p300, p300)
 
     # Distribute inserts to tubes based on the corresponding inserts from the constructs CSV file
     for index, construct_tube in enumerate(construct_tubes):
@@ -152,7 +182,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 # Default: use tube rack
                 pipette_transfer(vol_per_insert, tube_rack[insert_location], tc_plate[construct_tube])
 
-    pause(f"Place Master Mix in [{tube_rack[master_mix]}] and press continue. Thermocycler protocol will begin after pipetting.")
+    # pause("Thermocycler protocol will begin after pipetting.")
 
     tc_mod.close_lid()
 
