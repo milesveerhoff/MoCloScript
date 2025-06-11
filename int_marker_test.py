@@ -267,9 +267,12 @@ def custom_mix(pipette, well, mixreps=3, vol=20, z_asp=1, z_disp_source_mix=8, z
     for _ in range(mixreps):
         pipette.aspirate(vol, well.bottom(z_asp))
         pipette.dispense(vol, well.bottom(z_disp_source_mix))
-    # Restore original flow rates
+    # Restore original flow rates BEFORE blow out
     pipette.flow_rate.aspirate = orig_asp
     pipette.flow_rate.dispense = orig_disp
-    pipette.blow_out(well.bottom(z_disp_destination))
+    # Blow out just above the bottom to help droplet detach
+    pipette.blow_out(well.bottom(z_disp_destination + 2))
+    # Touch tip to the well wall to remove any droplet
+    pipette.touch_tip(well)
 
 
