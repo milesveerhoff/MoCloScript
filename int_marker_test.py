@@ -226,6 +226,8 @@ def run(protocol: protocol_api.ProtocolContext):
 
     tc_mod.close_lid()
 
+    # reaction_temp = 37 # type: ignore
+    # inactivation_temp = 65 # type: ignore
     '''
     Thermocycler protocol based on BsaI test protocol, variables passed from script generation
     ----------------------
@@ -235,15 +237,17 @@ def run(protocol: protocol_api.ProtocolContext):
     2. reaction_temp, 1.5min
     3. 16C, 3min
     4. GOTO step 2, 25x
-    5. 50C, 10min
-    6. inactivation_temp, 10min
-    7. 4C, 1 hour, open lid
+    5. 16C, 20min
+    6. 50C, 10min
+    7. inactivation_temp, 10min
+    8. 4C, 1 hour, open lid
     '''    
     tc_mod.set_lid_temperature(temperature=(inactivation_temp + 10))
     tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=900, block_max_volume=reaction_vol) # 15 min
     for i in range(25):
         tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=90, block_max_volume=reaction_vol) # 1.5 min
         tc_mod.set_block_temperature(temperature=16, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
+    tc_mod.set_block_temperature(temperature=16, hold_time_seconds=1200, block_max_volume=reaction_vol) # 20 min
     tc_mod.set_block_temperature(temperature=50, hold_time_seconds=300, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=inactivation_temp, hold_time_seconds=600, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=4, hold_time_seconds=3600) # 1 hour
