@@ -31,13 +31,13 @@ reagent_tubes = [master_mix] + list(inserts.values())
 construct_tubes = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8'] # type: ignore
 
 # Define volumes, in uL
-vol_master_mix_per_reaction = [30, 30, 30, 30, 30, 30, 30, 30] # type: ignore
+vol_master_mix_per_reaction = [5, 5, 5, 5, 5, 5, 5, 5] # type: ignore
 vol_per_insert = 10 # type: ignore
 
 # Thermocycler settings
 reaction_temp = 37 # type: ignore
 inactivation_temp = 65 # type: ignore
-reaction_vol = 40 # Total volume of the reaction
+reaction_vol = 25 # Total volume of the reaction
 
 def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK & TIPRACK LOADING ---
@@ -100,12 +100,12 @@ def run(protocol: protocol_api.ProtocolContext):
     # Pipette transfer function to handle both pipettes
     def pipette_transfer(vol, source, dest, pipette=None):
         if pipette is not None:
-            pipette.transfer(vol, source, dest)
+            pipette.transfer(vol, source, dest, new_tip='never')
         else:
             if vol < 20:
-                p20.transfer(vol, source, dest)
+                p20.transfer(vol, source, dest, new_tip='never')
             else:
-                p300.transfer(vol, source, dest)
+                p300.transfer(vol, source, dest, new_tip='never')
 
     # Blink and pause function
     def pause(message):
@@ -167,20 +167,31 @@ def run(protocol: protocol_api.ProtocolContext):
 
     # Distribute inserts to tubes based on the corresponding inserts from the constructs CSV file
     for index, construct_tube in enumerate(construct_tubes):
-        construct_inserts = constructs[index]  # Get inserts for the current construct
-        for insert in construct_inserts:
+        construct_inserts = constructs[index]
+        for i, insert in enumerate(construct_inserts):
             insert_location = inserts[insert]
+            p20.pick_up_tip()
             # Decide which plate to use for each insert
             if isinstance(insert_location, tuple) or isinstance(insert_location, list):
-                # If insert_location is a tuple/list: (plate_type, well)
                 plate_type, well = insert_location
                 if plate_type == "myt_plate" and myt_plate is not None:
-                    pipette_transfer(vol_per_insert, myt_plate[well], tc_plate[construct_tube])
+                    pipette_transfer(vol_per_insert, myt_plate[well], tc_plate[construct_tube], pipette=p20)
                 else:
-                    pipette_transfer(vol_per_insert, tube_rack[well], tc_plate[construct_tube])
+                    pipette_transfer(vol_per_insert, tube_rack[well], tc_plate[construct_tube], pipette=p20)
             else:
-                # Default: use tube rack
-                pipette_transfer(vol_per_insert, tube_rack[insert_location], tc_plate[construct_tube])
+                pipette_transfer(vol_per_insert, tube_rack[insert_location], tc_plate[construct_tube], pipette=p20)
+            # After the last insert, custom mix in the destination well with the same tip, then drop
+            if i == len(construct_inserts) - 1:
+                custom_mix(
+                    pipette=p20,
+                    well=tc_plate[construct_tube],
+                    mixreps=4,
+                    vol=min(20, vol_per_insert * len(construct_inserts)),
+                    z_asp=1,
+                    z_disp_source_mix=8,
+                    z_disp_destination=8
+                )
+            p20.drop_tip()
 
     # pause("Thermocycler protocol will begin after pipetting.")
 
@@ -212,5 +223,20 @@ def run(protocol: protocol_api.ProtocolContext):
 
     pause("Thermocycler protocol complete. Press continue to open thermocycler lid.")
     tc_mod.open_lid() # Open lid for pipetting
+
+def custom_mix(pipette, well, mixreps=3, vol=20, z_asp=1, z_disp_source_mix=8, z_disp_destination=8):
+    # Save original flow rates
+    orig_asp = pipette.flow_rate.aspirate
+    orig_disp = pipette.flow_rate.dispense
+    # Increase flow rates for mixing
+    pipette.flow_rate.aspirate *= 4
+    pipette.flow_rate.dispense *= 6
+    for _ in range(mixreps):
+        pipette.aspirate(vol, well.bottom(z_asp))
+        pipette.dispense(vol, well.bottom(z_disp_source_mix))
+    # Restore original flow rates
+    pipette.flow_rate.aspirate = orig_asp
+    pipette.flow_rate.dispense = orig_disp
+    pipette.blow_out(well.bottom(z_disp_destination))
 
 
