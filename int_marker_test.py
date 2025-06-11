@@ -193,7 +193,7 @@ def run(protocol: protocol_api.ProtocolContext):
         construct_inserts = constructs[index]
         for i, insert in enumerate(construct_inserts):
             insert_location = inserts[insert]
-            insert_vol = vol_per_insert_dict.get(insert, 5)  # Default to 4.5 if not found
+            insert_vol = vol_per_insert_dict.get(insert, 5)  # Default to 5 if not found
             p20.pick_up_tip()
             # Decide which plate to use for each insert
             if isinstance(insert_location, tuple) or isinstance(insert_location, list):
@@ -203,7 +203,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 else:
                     pipette_transfer(insert_vol, tube_rack[well], tc_plate[construct_tube], pipette=p20)
             else:
-                pipette_transfer(insert_vol), tube_rack[insert_location], tc_plate[construct_tube], pipette=p20)
+                pipette_transfer(insert_vol, tube_rack[insert_location], tc_plate[construct_tube], pipette=p20)
             # After the last insert, custom mix in the destination well with the same tip, then drop
             if i == len(construct_inserts) - 1:
                 custom_mix(
