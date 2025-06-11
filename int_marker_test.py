@@ -31,13 +31,22 @@ reagent_tubes = [master_mix] + list(inserts.values())
 construct_tubes = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8'] # type: ignore
 
 # Define volumes, in uL
-vol_master_mix_per_reaction = [5, 5, 5, 5, 5, 5, 5, 5] # type: ignore
-vol_per_insert = 10 # type: ignore
+vol_master_mix_per_reaction = [11] * len(construct_tubes)  # 11 uL master mix per well
+
+# Insert volumes: dictionary mapping insert name to volume (uL)
+vol_per_insert_dict = {
+    'pMYT031_nan_HIS3': 3.68,
+    'pMYT032_nan_TRP1': 4.21,
+    'pMYT036_nan_NatR': 3.12,
+    'pMYT037_nan_HygR': 5.57,
+    'pMYT081_nan_Int7_Vector': 5.94,
+    'pMYT083_nan_Int9_Vector': 6.89
+} # type: ignore
 
 # Thermocycler settings
 reaction_temp = 37 # type: ignore
 inactivation_temp = 65 # type: ignore
-reaction_vol = 25 # Total volume of the reaction
+reaction_vol = 30 # Total volume of the reaction
 
 def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK & TIPRACK LOADING ---
@@ -158,35 +167,50 @@ def run(protocol: protocol_api.ProtocolContext):
         else:
             mm_source = tube_rack[master_mix]
 
-    # Distribute with p20
+    # Distribute 11 uL master mix to each well
     if wells_p20:
         distribute_master_mix(vols_p20, mm_source, wells_p20, p20)
-    # Distribute with p300
     if wells_p300:
         distribute_master_mix(vols_p300, mm_source, wells_p300, p300)
 
-    # Distribute inserts to tubes based on the corresponding inserts from the constructs CSV file
+    # First, add water to each well that needs it (after master mix, before inserts), using a single tip
+    wells_needing_water = []
+    water_vols = []
+    for index, construct_tube in enumerate(construct_tubes):
+        construct_inserts = constructs[index]
+        total_insert_vol = sum(vol_per_insert_dict.get(insert, 5) for insert in construct_inserts)
+        if total_insert_vol < 19:
+            wells_needing_water.append(tc_plate[construct_tube])
+            water_vols.append(19 - total_insert_vol)
+    if wells_needing_water:
+        p20.pick_up_tip()
+        for vol, dest in zip(water_vols, wells_needing_water):
+            p20.transfer(vol, tube_rack['A2'], dest, new_tip='never')
+        p20.drop_tip()
+
+    # Now add inserts to each well
     for index, construct_tube in enumerate(construct_tubes):
         construct_inserts = constructs[index]
         for i, insert in enumerate(construct_inserts):
             insert_location = inserts[insert]
+            insert_vol = vol_per_insert_dict.get(insert, 5)  # Default to 4.5 if not found
             p20.pick_up_tip()
             # Decide which plate to use for each insert
             if isinstance(insert_location, tuple) or isinstance(insert_location, list):
                 plate_type, well = insert_location
                 if plate_type == "myt_plate" and myt_plate is not None:
-                    pipette_transfer(vol_per_insert, myt_plate[well], tc_plate[construct_tube], pipette=p20)
+                    pipette_transfer(insert_vol, myt_plate[well], tc_plate[construct_tube], pipette=p20)
                 else:
-                    pipette_transfer(vol_per_insert, tube_rack[well], tc_plate[construct_tube], pipette=p20)
+                    pipette_transfer(insert_vol, tube_rack[well], tc_plate[construct_tube], pipette=p20)
             else:
-                pipette_transfer(vol_per_insert, tube_rack[insert_location], tc_plate[construct_tube], pipette=p20)
+                pipette_transfer(insert_vol), tube_rack[insert_location], tc_plate[construct_tube], pipette=p20)
             # After the last insert, custom mix in the destination well with the same tip, then drop
             if i == len(construct_inserts) - 1:
                 custom_mix(
                     pipette=p20,
                     well=tc_plate[construct_tube],
                     mixreps=4,
-                    vol=min(20, vol_per_insert * len(construct_inserts)),
+                    vol=min(20, insert_vol * len(construct_inserts)),
                     z_asp=1,
                     z_disp_source_mix=8,
                     z_disp_destination=8
