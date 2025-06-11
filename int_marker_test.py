@@ -193,7 +193,7 @@ def run(protocol: protocol_api.ProtocolContext):
         construct_inserts = constructs[index]  # Get inserts for the current construct
         for insert in construct_inserts:
             insert_location = inserts[insert]
-            insert_vol = vol_per_insert_dict.get(insert, 4.5)  # Default to 4.5 if not found
+            insert_vol = vol_per_insert_dict.get(insert, 5)  # Default to 4.5 if not found
             # Decide which plate to use for each insert
             if isinstance(insert_location, tuple) or isinstance(insert_location, list):
                 plate_type, well = insert_location
