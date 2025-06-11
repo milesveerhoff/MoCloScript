@@ -178,7 +178,7 @@ def run(protocol: protocol_api.ProtocolContext):
     water_vols = []
     for index, construct_tube in enumerate(construct_tubes):
         construct_inserts = constructs[index]
-        total_insert_vol = sum(vol_per_insert_dict.get(insert, 4.5) for insert in construct_inserts)
+        total_insert_vol = sum(vol_per_insert_dict.get(insert, 5) for insert in construct_inserts)
         if total_insert_vol < 19:
             wells_needing_water.append(tc_plate[construct_tube])
             water_vols.append(19 - total_insert_vol)
