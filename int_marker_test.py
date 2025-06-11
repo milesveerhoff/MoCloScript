@@ -87,6 +87,7 @@ def run(protocol: protocol_api.ProtocolContext):
         myt_plate = protocol.load_labware("nest_96_wellplate_200ul_flat", "2")
     except Exception:
         myt_plate = None
+    protocol.set_rail_lights(True)
 
     # Initialize pipettes with all loaded tip racks
     p300 = protocol.load_instrument("p300_single_gen2", "right", tip_racks=tips300_racks)
@@ -167,26 +168,30 @@ def run(protocol: protocol_api.ProtocolContext):
         else:
             mm_source = tube_rack[master_mix]
 
-    # Distribute 11 uL master mix to each well
-    if wells_p20:
-        distribute_master_mix(vols_p20, mm_source, wells_p20, p20)
-    if wells_p300:
-        distribute_master_mix(vols_p300, mm_source, wells_p300, p300)
-
-    # First, add water to each well that needs it (after master mix, before inserts), using a single tip
+    # Calculate water needed for each well to reach the correct total volume
     wells_needing_water = []
     water_vols = []
     for index, construct_tube in enumerate(construct_tubes):
         construct_inserts = constructs[index]
         total_insert_vol = sum(vol_per_insert_dict.get(insert, 5) for insert in construct_inserts)
-        if total_insert_vol < 19:
+        water_needed = reaction_vol - (vol_master_mix_per_reaction[index] + total_insert_vol)
+        if water_needed > 0:
             wells_needing_water.append(tc_plate[construct_tube])
-            water_vols.append(19 - total_insert_vol)
+            water_vols.append(water_needed)
+        elif water_needed < 0:
+            # Optional: warn if overfilled
+            protocol.comment(f"Warning: Well {construct_tube} will be overfilled by {-water_needed} uL.")
     if wells_needing_water:
         p20.pick_up_tip()
         for vol, dest in zip(water_vols, wells_needing_water):
             p20.transfer(vol, tube_rack['A2'], dest, new_tip='never')
         p20.drop_tip()
+
+    # Now distribute master mix to each well
+    if wells_p20:
+        distribute_master_mix(vols_p20, mm_source, wells_p20, p20)
+    if wells_p300:
+        distribute_master_mix(vols_p300, mm_source, wells_p300, p300)
 
     # Now add inserts to each well
     for index, construct_tube in enumerate(construct_tubes):
