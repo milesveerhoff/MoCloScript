@@ -240,7 +240,7 @@ def run(protocol: protocol_api.ProtocolContext):
     5. 16C, 20min
     6. 50C, 10min
     7. inactivation_temp, 10min
-    8. 4C, 1 hour, open lid
+    8. 4C, 1 min, pause to open lid
     '''    
     tc_mod.set_lid_temperature(temperature=(inactivation_temp + 10))
     tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=900, block_max_volume=reaction_vol) # 15 min
@@ -250,7 +250,7 @@ def run(protocol: protocol_api.ProtocolContext):
     tc_mod.set_block_temperature(temperature=16, hold_time_seconds=1200, block_max_volume=reaction_vol) # 20 min
     tc_mod.set_block_temperature(temperature=50, hold_time_seconds=300, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=inactivation_temp, hold_time_seconds=600, block_max_volume=reaction_vol) # 10 min
-    tc_mod.set_block_temperature(temperature=4, hold_time_seconds=3600) # 1 hour
+    tc_mod.set_block_temperature(temperature=4, hold_time_seconds=60) # 1 min
     tc_mod.deactivate_lid() # Deactivate lid to allow for pipetting
     protocol.delay(seconds=5) # Wait for lid to cool down
 
