@@ -2,6 +2,7 @@ import pandas as pd
 import tkinter as tk
 from tkinter import filedialog
 import re
+import datetime
 
 # Template script with placeholders
 template_script = open("template_script.py").read()
@@ -158,14 +159,14 @@ def display_confirmation_window(
     reaction_vol_label = tk.Label(scrollable_frame, text="Total reaction volume per construct (µL):")
     reaction_vol_label.pack(pady=5)
     reaction_vol_entry = tk.Entry(scrollable_frame)
-    reaction_vol_entry.insert(0, "50")  # Default value
+    reaction_vol_entry.insert(0, "30")  # Default value
     reaction_vol_entry.pack(pady=5)
 
     # --- Excess percentage input and live update (moved below info) ---
     excess_label = tk.Label(scrollable_frame, text="Excess percentage for master mix (e.g., 5 for 5%):")
     excess_label.pack(pady=5)
     excess_entry = tk.Entry(scrollable_frame)
-    excess_entry.insert(0, "5")  # Default value
+    excess_entry.insert(0, "0")  # Default value
     excess_entry.pack(pady=5)
 
     # Info label for master mix, to be updated live
@@ -215,7 +216,7 @@ def display_confirmation_window(
     file_name_label = tk.Label(scrollable_frame, text="File will be saved in the same directory as this script, and overwrite files with the same name.\nSave as:")
     file_name_label.pack(pady=5)
     file_name_entry = tk.Entry(scrollable_frame)
-    file_name_entry.insert(0, "saved_moclo_script.py")  # Default value
+    file_name_entry.insert(0, "saved_protocol.py")  # Default value
     file_name_entry.pack(pady=5)
 
     # Confirm button to generate the script
@@ -257,12 +258,13 @@ def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, e
         master_mix=master_mix,
         construct_tubes=construct_tubes,
         vol_master_mix_per_reaction=vol_master_mix_per_reaction,
-        vol_per_insert=vol_per_insert_dict,  # Pass the dict!
+        vol_per_insert=vol_per_insert_dict,
         reaction_temp=tc_temp_activation.get(),
         inactivation_temp=tc_temp_inactivation.get(),
         constructs=constructs,
         total_p20_tips=total_p20_tips,
-        total_p300_tips=total_p300_tips
+        total_p300_tips=total_p300_tips,
+        reaction_vol=reaction_vol_entry.get()
     )
 
     with open(file_name, 'w') as file:

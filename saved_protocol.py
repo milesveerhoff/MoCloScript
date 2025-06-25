@@ -1,26 +1,40 @@
 import opentrons.execute # type: ignore
 from opentrons import protocol_api # type: ignore
-metadata = {{"apiLevel": "2.22", "description": '''{tube_placements}'''}}
+metadata = {"apiLevel": "2.22", "description": '''[A1] (Tube Rack): Lvl 1 GFP Dropout L2RE, 
+[A2] (Tube Rack): pYTK014, 
+[A3] (Tube Rack): pYTK017, 
+[A4] (Tube Rack): pYTK027, 
+[A5] (Tube Rack): pYSD021, 
+[A6] (Tube Rack): HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon, 
+[B1] (Tube Rack): pYSD085, 
+[B2] (Tube Rack): pYTK065, 
+
+[B3]: Master Mix (MM), 
+
+Constructs will be built at the following locations in the thermocycler module:
+[A1]: OLD pWL-591 Lvl 1 GFP Dropout L2RE-pYTK014-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, 
+[A2]: OLD pWL-590 Lvl 1 GFP Dropout L2RE-pYTK017-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, 
+[A3]: OLD pWL-589 Lvl 1 GFP Dropout L2RE-pYTK027-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, '''}
 
 # Fragments and constructs
-inserts = {inserts} # type: ignore
-constructs = {constructs} # type: ignore
+inserts = {'Lvl 1 GFP Dropout L2RE': ('tube_rack', 'A1'), 'pYTK014': ('tube_rack', 'A2'), 'pYTK017': ('tube_rack', 'A3'), 'pYTK027': ('tube_rack', 'A4'), 'pYSD021': ('tube_rack', 'A5'), "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon": ('tube_rack', 'A6'), 'pYSD085': ('tube_rack', 'B1'), 'pYTK065': ('tube_rack', 'B2')} # type: ignore
+constructs = [['Lvl 1 GFP Dropout L2RE', 'pYTK014', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK017', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK027', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065']] # type: ignore
 
 # Tube rack locations of reagents
-master_mix = f'{master_mix}' # type: ignore
+master_mix = f'B3' # type: ignore
 reagent_tubes = [master_mix] + list(inserts.values())
 
 # Construct Tube Locations
-construct_tubes = {construct_tubes} # type: ignore
+construct_tubes = ['A1', 'A2', 'A3'] # type: ignore
 
 # Define volumes, in uL
-vol_master_mix_per_reaction = {vol_master_mix_per_reaction} # type: ignore
-vol_per_insert_dict = {vol_per_insert} # type: ignore
+vol_master_mix_per_reaction = [24.0, 24.0, 24.0] # type: ignore
+vol_per_insert_dict = {'Lvl 1 GFP Dropout L2RE': 1, 'pYTK014': 1, 'pYTK017': 1, 'pYTK027': 1, 'pYSD021': 1, "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon": 1, 'pYSD085': 1, 'pYTK065': 1} # type: ignore
 
 # Thermocycler settings
-reaction_temp = {reaction_temp} # type: ignore
-inactivation_temp = {inactivation_temp} # type: ignore
-reaction_vol = {reaction_vol} # Total volume of the reaction
+reaction_temp = 37 # type: ignore
+inactivation_temp = 65 # type: ignore
+reaction_vol = 30 # Total volume of the reaction
 
 def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK & TIPRACK LOADING ---
@@ -68,7 +82,7 @@ def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK ---
     if total_p20_tips > 96 or total_p300_tips > 96:
         raise Exception(
-            f"Not enough tips: Need {total_p20_tips} x 20uL tips and {total_p300_tips} x 300uL tips, "
+            f"Not enough tips: Need 18 x 20uL tips and 3 x 300uL tips, "
             "but only 96 of each are loaded. Please add more tip racks or reduce the number of reactions."
         )
 
