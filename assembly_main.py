@@ -2,7 +2,13 @@ import pandas as pd
 import tkinter as tk
 from tkinter import filedialog
 import re
-import datetime
+
+def safe_float(entry, default=1.0):
+    try:
+        val = entry.get()
+        return float(val) if val.strip() != "" else default
+    except Exception:
+        return default
 
 # Template script with placeholders
 template_script = open("template_script.py").read()
@@ -107,32 +113,26 @@ def display_confirmation_window(
 ):
     global confirmation_window, file_name_entry, excess_entry
     confirmation_window = tk.Tk()
-    confirmation_window.title("Confirm Placements")
+    confirmation_window.title("Confirm Settings")
     confirmation_window.configure(padx=20, pady=20)
 
     # Create a canvas and scrollbar for scrollable content
     canvas = tk.Canvas(confirmation_window)
     scrollbar = tk.Scrollbar(confirmation_window, orient="vertical", command=canvas.yview)
     scrollable_frame = tk.Frame(canvas)
-
-    # Configure the canvas to work with the scrollbar
     scrollable_frame.bind(
         "<Configure>",
         lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
     )
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=scrollbar.set)
-
-    # Bind mouse wheel to canvas scrolling
     def _on_mousewheel(event):
         canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
     canvas.bind_all("<MouseWheel>", _on_mousewheel)
-
-    # Pack the canvas and scrollbar
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
 
-    # Create a readable format for tube placements, including plate info for pMYT
+    # Tube placements info
     global tube_placements
     tube_placements = ""
     for insert, (plate, well) in insert_plate_map.items():
@@ -144,19 +144,18 @@ def display_confirmation_window(
     tube_placements += "\nConstructs will be built at the following locations in the thermocycler module:\n"
     tube_placements += "\n".join([f"[{location}]: {construct_names[i]}, " for i, location in enumerate(construct_tubes)])
 
-    # Display confirmation message with details (excluding MM info, now live above)
+    # Confirmation message
     confirmation_message = (
         f"Loaded {len(constructs_df)} constructs using {path_constructs} and\n"
         f"{num_inserts} fragments using {path_fragments}.\n\n"
         "Place reagents at their respective locations:\n\n"
         f"{tube_placements}\n\n"
-        "Are you ready to generate the script?"
     )
     label_confirmation = tk.Label(scrollable_frame, text=confirmation_message, justify=tk.LEFT, wraplength=500)
     label_confirmation.pack(pady=10)
 
-    # --- Per-insert volume input section ---
-    tk.Label(scrollable_frame, text="Set volume (µL) for each insert:").pack(pady=5)
+    # --- Per-insert volume input section (FIRST) ---
+    tk.Label(scrollable_frame, text="Set volume (µL) needed for each insert:").pack(pady=5)
     insert_volume_entries = {}
     for insert_name in vol_per_insert_dict:
         frame = tk.Frame(scrollable_frame)
@@ -167,6 +166,13 @@ def display_confirmation_window(
         entry.pack(side="left")
         insert_volume_entries[insert_name] = entry
 
+    # --- Master mix per reaction input section (SECOND) ---
+    mm_per_reaction_label = tk.Label(scrollable_frame, text="Master Mix volume per reaction (µL):")
+    mm_per_reaction_label.pack(pady=5)
+    mm_per_reaction_entry = tk.Entry(scrollable_frame)
+    mm_per_reaction_entry.insert(0, "6")  # Default value is 6 µL
+    mm_per_reaction_entry.pack(pady=5)
+
     # Input box for total reaction volume
     reaction_vol_label = tk.Label(scrollable_frame, text="Total reaction volume per construct (µL):")
     reaction_vol_label.pack(pady=5)
@@ -174,39 +180,44 @@ def display_confirmation_window(
     reaction_vol_entry.insert(0, "15")  # Default value changed to 15
     reaction_vol_entry.pack(pady=5)
 
-    # --- Excess percentage input and live update (moved below info) ---
+    # --- Excess percentage input and live update ---
     excess_label = tk.Label(scrollable_frame, text="Excess percentage for master mix (e.g., 5 for 5%):")
     excess_label.pack(pady=5)
     excess_entry = tk.Entry(scrollable_frame)
     excess_entry.insert(0, "0")  # Default value remains 0
     excess_entry.pack(pady=5)
 
-    # Info label for master mix, to be updated live
+    # Info label for water and master mix, to be updated live
     mm_info_var = tk.StringVar()
     def update_mm_info(*args):
         try:
             excess_percent = float(excess_entry.get())
         except Exception:
-            excess_percent = 5.0
+            excess_percent = 0.0
         try:
             reaction_vol = float(reaction_vol_entry.get())
         except Exception:
-            reaction_vol = 50.0
+            reaction_vol = 15.0
+        try:
+            mm_per_reaction = float(mm_per_reaction_entry.get())
+        except Exception:
+            mm_per_reaction = 6.0
         n_reactions = len(constructs)
-        # Use per-insert volumes for each construct
-        vol_master_mix_per_reaction = []
+        water_per_reaction = []
         for construct in constructs:
-            total_insert_vol = sum(float(insert_volume_entries[insert].get()) for insert in construct)
-            mm_vol = reaction_vol - total_insert_vol
-            vol_master_mix_per_reaction.append(mm_vol)
-        vol_master_mix = sum(vol_master_mix_per_reaction)
-        vol_master_mix_total = int(vol_master_mix * (1 + excess_percent / 100) + 0.5)
+            total_insert_vol = sum(safe_float(insert_volume_entries[insert]) for insert in construct)
+            water_vol = reaction_vol - (mm_per_reaction + total_insert_vol)
+            water_per_reaction.append(round(water_vol,2))  # Round to 2 decimal places
+        total_mm = mm_per_reaction * n_reactions
+        total_mm_with_excess = int(total_mm * (1 + excess_percent / 100) + 0.5)
         mm_info_var.set(
-            f"Master Mix per reaction: {vol_master_mix_per_reaction} uL\n"
-            f"Total Master Mix (with {excess_percent:.1f}% excess): {vol_master_mix_total} uL\n"
+            f"Master Mix per reaction: {mm_per_reaction} uL\n"
+            f"Total Master Mix (with {excess_percent:.1f}% excess): {total_mm_with_excess} uL\n"
+            f"Water per reaction: {water_per_reaction} uL"
         )
     excess_entry.bind("<KeyRelease>", update_mm_info)
     reaction_vol_entry.bind("<KeyRelease>", update_mm_info)
+    mm_per_reaction_entry.bind("<KeyRelease>", update_mm_info)
     for entry in insert_volume_entries.values():
         entry.bind("<KeyRelease>", update_mm_info)
     update_mm_info()  # Initialize with default
@@ -239,14 +250,14 @@ def display_confirmation_window(
         text="Confirm",
         command=lambda: generate_script(
             file_name_entry, tc_temp_activation, tc_temp_inactivation,
-            excess_entry, reaction_vol_entry, insert_volume_entries
+            excess_entry, reaction_vol_entry, insert_volume_entries, mm_per_reaction_entry
         )
     )
     confirm_button.pack(pady=20)
 
 def generate_script(
     file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry,
-    reaction_vol_entry, insert_volume_entries
+    reaction_vol_entry, insert_volume_entries, mm_per_reaction_entry
 ):
     file_name = file_name_entry.get()
     try:
@@ -257,6 +268,10 @@ def generate_script(
         reaction_vol = float(reaction_vol_entry.get())
     except Exception:
         reaction_vol = 15.0  # Default to 15 µL
+    try:
+        mm_per_reaction = float(mm_per_reaction_entry.get())
+    except Exception:
+        mm_per_reaction = 6.0  # Default to 6 µL
 
     # Use per-insert volumes for each construct
     vol_per_insert_dict = {}
@@ -266,30 +281,33 @@ def generate_script(
         except Exception:
             vol_per_insert_dict[insert_name] = 1.0  # fallback default
 
-    vol_master_mix_per_reaction = []
+    # Calculate water needed for each well
+    water_per_reaction = []
     for construct in constructs:
         total_insert_vol = sum(float(vol_per_insert_dict.get(insert, 1)) for insert in construct)
-        mm_vol = reaction_vol - total_insert_vol
-        vol_master_mix_per_reaction.append(mm_vol)
+        water_vol = reaction_vol - (mm_per_reaction + total_insert_vol)
+        water_per_reaction.append(round(water_vol, 2))  # Round to 2
 
     num_master_mix_transfers = len(construct_tubes)
     num_insert_transfers = sum(len(construct) for construct in constructs)
-    total_p20_tips = num_insert_transfers + sum(1 for v in vol_master_mix_per_reaction if v < 20)
-    total_p300_tips = sum(1 for v in vol_master_mix_per_reaction if v >= 20)
+    total_p20_tips = num_insert_transfers + num_master_mix_transfers  # assuming all MM and inserts use p20
+    total_p300_tips = 0  # not used if all volumes < 20
 
     script = template_script.format(
         tube_placements=tube_placements,
         inserts=insert_locations,
         master_mix=master_mix,
         construct_tubes=construct_tubes,
-        vol_master_mix_per_reaction=vol_master_mix_per_reaction,
+        mm_per_reaction=mm_per_reaction,
         vol_per_insert=vol_per_insert_dict,
+        water_per_reaction=water_per_reaction,
         reaction_temp=tc_temp_activation.get(),
         inactivation_temp=tc_temp_inactivation.get(),
         constructs=constructs,
         total_p20_tips=total_p20_tips,
         total_p300_tips=total_p300_tips,
-        reaction_vol=reaction_vol
+        reaction_vol=reaction_vol,
+        vol_master_mix_per_reaction=[mm_per_reaction] * len(constructs)
     )
 
     with open(file_name, 'w') as file:
@@ -304,6 +322,7 @@ path_constructs = ""
 
 # Create the main window
 root = tk.Tk()
+root.title("Assembly - Select Input Files")
 
 # Add a variable to track the checkbox state
 use_myt_var = tk.BooleanVar(value=False)
@@ -320,27 +339,37 @@ def handle_myt_toolkit_selected():
 def handle_myt_toolkit_unselected():
     print("Multiplex Yeast Toolkit option unselected.")
 
-# Create labels and buttons to open the file dialogs
-label_1 = tk.Label(root, text="Select Fragments CSV table from Benchling")
-label_1.pack(pady=5)
-select_button_1 = tk.Button(root, text="Select File", command=select_file_1)
+# --- Add file selection buttons ---
+def check_accept_ready():
+    if path_fragments and path_constructs:
+        accept_button.config(state="normal")
+    else:
+        accept_button.config(state="disabled")
+
+def select_file_1():
+    global path_fragments
+    path_fragments = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+    if path_fragments:
+        select_button_1.config(text=f"Selected: {path_fragments}")
+    check_accept_ready()
+
+def select_file_2():
+    global path_constructs
+    path_constructs = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+    if path_constructs:
+        select_button_2.config(text=f"Selected: {path_constructs}")
+    check_accept_ready()
+
+select_button_1 = tk.Button(root, text="Select Fragments CSV", command=select_file_1)
 select_button_1.pack(pady=5)
-label_2 = tk.Label(root, text="Select Constructs CSV table from Benchling")
-label_2.pack(pady=5)
-select_button_2 = tk.Button(root, text="Select File", command=select_file_2)
+
+select_button_2 = tk.Button(root, text="Select Constructs CSV", command=select_file_2)
 select_button_2.pack(pady=5)
 
-# Add the MYT checkbox
-myt_checkbox = tk.Checkbutton(
-    root,
-    text="My constructs use plasmids from the Multiplex Yeast Toolkit",
-    variable=use_myt_var,
-    command=on_myt_checkbox
-)
+myt_checkbox = tk.Checkbutton(root, text="Use Multiplex Yeast Toolkit (MYT)", variable=use_myt_var, command=on_myt_checkbox)
 myt_checkbox.pack(pady=5)
 
-# Accept button to close the window
-accept_button = tk.Button(root, text="Accept", command=accept_files)
+accept_button = tk.Button(root, text="Accept", command=accept_files, state="disabled")
 accept_button.pack(pady=20)
 
 # Run the application

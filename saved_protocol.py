@@ -1,40 +1,138 @@
 import opentrons.execute # type: ignore
 from opentrons import protocol_api # type: ignore
-metadata = {"apiLevel": "2.22", "description": '''[A1] (Tube Rack): Lvl 1 GFP Dropout L2RE, 
-[A2] (Tube Rack): pYTK014, 
-[A3] (Tube Rack): pYTK017, 
-[A4] (Tube Rack): pYTK027, 
-[A5] (Tube Rack): pYSD021, 
-[A6] (Tube Rack): HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon, 
-[B1] (Tube Rack): pYSD085, 
-[B2] (Tube Rack): pYTK065, 
+metadata = {"apiLevel": "2.22", "description": '''[G3] (MYT Plate): pMYT075_nan_Int1_Vector, 
+[G5] (MYT Plate): pMYT077_nan_Int3_Vector, 
+[G6] (MYT Plate): pMYT078_nan_Int4_Vector, 
+[G7] (MYT Plate): pMYT079_nan_Int5_Vector, 
+[G8] (MYT Plate): pMYT080_nan_Int6_Vector, 
+[G9] (MYT Plate): pMYT081_nan_Int7_Vector, 
+[G10] (MYT Plate): pMYT082_nan_Int8_Vector, 
+[G11] (MYT Plate): pMYT083_nan_Int9_Vector, 
+[G12] (MYT Plate): pMYT084_nan_Int10_Vector, 
+[C5] (MYT Plate): pMYT029_nan_URA3, 
+[C6] (MYT Plate): pMYT030_nan_LEU2, 
+[C7] (MYT Plate): pMYT031_nan_HIS3, 
+[C8] (MYT Plate): pMYT032_nan_TRP1, 
+[C9] (MYT Plate): pMYT033_nan_MET17, 
+[C10] (MYT Plate): pMYT034_nan_LYS2, 
+[C11] (MYT Plate): pMYT035_nan_KanR, 
+[C12] (MYT Plate): pMYT036_nan_NatR, 
+[D1] (MYT Plate): pMYT037_nan_HygR, 
+[D2] (MYT Plate): pMYT038_nan_ZeoR, 
 
-[B3]: Master Mix (MM), 
+[A1]: Master Mix (MM), 
 
 Constructs will be built at the following locations in the thermocycler module:
-[A1]: OLD pWL-591 Lvl 1 GFP Dropout L2RE-pYTK014-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, 
-[A2]: OLD pWL-590 Lvl 1 GFP Dropout L2RE-pYTK017-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, 
-[A3]: OLD pWL-589 Lvl 1 GFP Dropout L2RE-pYTK027-pYSD021-HFB1:KU173825, 3b' part, no stop-pYSD085-pYTK065, '''}
+[A1]: pMYT075_nan_Int1_Vector-pMYT029_nan_URA3, 
+[A2]: pMYT075_nan_Int1_Vector-pMYT030_nan_LEU2, 
+[A3]: pMYT075_nan_Int1_Vector-pMYT031_nan_HIS3, 
+[A4]: pMYT075_nan_Int1_Vector-pMYT032_nan_TRP1, 
+[A5]: pMYT075_nan_Int1_Vector-pMYT033_nan_MET17, 
+[A6]: pMYT075_nan_Int1_Vector-pMYT034_nan_LYS2, 
+[A7]: pMYT075_nan_Int1_Vector-pMYT035_nan_KanR, 
+[A8]: pMYT075_nan_Int1_Vector-pMYT036_nan_NatR, 
+[A9]: pMYT075_nan_Int1_Vector-pMYT037_nan_HygR, 
+[A10]: pMYT075_nan_Int1_Vector-pMYT038_nan_ZeoR, 
+[A11]: pMYT077_nan_Int3_Vector-pMYT029_nan_URA3, 
+[A12]: pMYT077_nan_Int3_Vector-pMYT030_nan_LEU2, 
+[B1]: pMYT077_nan_Int3_Vector-pMYT031_nan_HIS3, 
+[B2]: pMYT077_nan_Int3_Vector-pMYT032_nan_TRP1, 
+[B3]: pMYT077_nan_Int3_Vector-pMYT033_nan_MET17, 
+[B4]: pMYT077_nan_Int3_Vector-pMYT034_nan_LYS2, 
+[B5]: pMYT077_nan_Int3_Vector-pMYT035_nan_KanR, 
+[B6]: pMYT077_nan_Int3_Vector-pMYT036_nan_NatR, 
+[B7]: pMYT077_nan_Int3_Vector-pMYT037_nan_HygR, 
+[B8]: pMYT077_nan_Int3_Vector-pMYT038_nan_ZeoR, 
+[B9]: pMYT078_nan_Int4_Vector-pMYT029_nan_URA3, 
+[B10]: pMYT078_nan_Int4_Vector-pMYT030_nan_LEU2, 
+[B11]: pMYT078_nan_Int4_Vector-pMYT031_nan_HIS3, 
+[B12]: pMYT078_nan_Int4_Vector-pMYT032_nan_TRP1, 
+[C1]: pMYT078_nan_Int4_Vector-pMYT033_nan_MET17, 
+[C2]: pMYT078_nan_Int4_Vector-pMYT034_nan_LYS2, 
+[C3]: pMYT078_nan_Int4_Vector-pMYT035_nan_KanR, 
+[C4]: pMYT078_nan_Int4_Vector-pMYT036_nan_NatR, 
+[C5]: pMYT078_nan_Int4_Vector-pMYT037_nan_HygR, 
+[C6]: pMYT078_nan_Int4_Vector-pMYT038_nan_ZeoR, 
+[C7]: pMYT079_nan_Int5_Vector-pMYT029_nan_URA3, 
+[C8]: pMYT079_nan_Int5_Vector-pMYT030_nan_LEU2, 
+[C9]: pMYT079_nan_Int5_Vector-pMYT031_nan_HIS3, 
+[C10]: pMYT079_nan_Int5_Vector-pMYT032_nan_TRP1, 
+[C11]: pMYT079_nan_Int5_Vector-pMYT033_nan_MET17, 
+[C12]: pMYT079_nan_Int5_Vector-pMYT034_nan_LYS2, 
+[D1]: pMYT079_nan_Int5_Vector-pMYT035_nan_KanR, 
+[D2]: pMYT079_nan_Int5_Vector-pMYT036_nan_NatR, 
+[D3]: pMYT079_nan_Int5_Vector-pMYT037_nan_HygR, 
+[D4]: pMYT079_nan_Int5_Vector-pMYT038_nan_ZeoR, 
+[D5]: pMYT080_nan_Int6_Vector-pMYT029_nan_URA3, 
+[D6]: pMYT080_nan_Int6_Vector-pMYT030_nan_LEU2, 
+[D7]: pMYT080_nan_Int6_Vector-pMYT031_nan_HIS3, 
+[D8]: pMYT080_nan_Int6_Vector-pMYT032_nan_TRP1, 
+[D9]: pMYT080_nan_Int6_Vector-pMYT033_nan_MET17, 
+[D10]: pMYT080_nan_Int6_Vector-pMYT034_nan_LYS2, 
+[D11]: pMYT080_nan_Int6_Vector-pMYT035_nan_KanR, 
+[D12]: pMYT080_nan_Int6_Vector-pMYT036_nan_NatR, 
+[E1]: pMYT080_nan_Int6_Vector-pMYT037_nan_HygR, 
+[E2]: pMYT080_nan_Int6_Vector-pMYT038_nan_ZeoR, 
+[E3]: pMYT081_nan_Int7_Vector-pMYT029_nan_URA3, 
+[E4]: pMYT081_nan_Int7_Vector-pMYT030_nan_LEU2, 
+[E5]: pMYT081_nan_Int7_Vector-pMYT031_nan_HIS3, 
+[E6]: pMYT081_nan_Int7_Vector-pMYT032_nan_TRP1, 
+[E7]: pMYT081_nan_Int7_Vector-pMYT033_nan_MET17, 
+[E8]: pMYT081_nan_Int7_Vector-pMYT034_nan_LYS2, 
+[E9]: pMYT081_nan_Int7_Vector-pMYT035_nan_KanR, 
+[E10]: pMYT081_nan_Int7_Vector-pMYT036_nan_NatR, 
+[E11]: pMYT081_nan_Int7_Vector-pMYT037_nan_HygR, 
+[E12]: pMYT081_nan_Int7_Vector-pMYT038_nan_ZeoR, 
+[F1]: pMYT082_nan_Int8_Vector-pMYT029_nan_URA3, 
+[F2]: pMYT082_nan_Int8_Vector-pMYT030_nan_LEU2, 
+[F3]: pMYT082_nan_Int8_Vector-pMYT031_nan_HIS3, 
+[F4]: pMYT082_nan_Int8_Vector-pMYT032_nan_TRP1, 
+[F5]: pMYT082_nan_Int8_Vector-pMYT033_nan_MET17, 
+[F6]: pMYT082_nan_Int8_Vector-pMYT034_nan_LYS2, 
+[F7]: pMYT082_nan_Int8_Vector-pMYT035_nan_KanR, 
+[F8]: pMYT082_nan_Int8_Vector-pMYT036_nan_NatR, 
+[F9]: pMYT082_nan_Int8_Vector-pMYT037_nan_HygR, 
+[F10]: pMYT082_nan_Int8_Vector-pMYT038_nan_ZeoR, 
+[F11]: pMYT083_nan_Int9_Vector-pMYT029_nan_URA3, 
+[F12]: pMYT083_nan_Int9_Vector-pMYT030_nan_LEU2, 
+[G1]: pMYT083_nan_Int9_Vector-pMYT031_nan_HIS3, 
+[G2]: pMYT083_nan_Int9_Vector-pMYT032_nan_TRP1, 
+[G3]: pMYT083_nan_Int9_Vector-pMYT033_nan_MET17, 
+[G4]: pMYT083_nan_Int9_Vector-pMYT034_nan_LYS2, 
+[G5]: pMYT083_nan_Int9_Vector-pMYT035_nan_KanR, 
+[G6]: pMYT083_nan_Int9_Vector-pMYT036_nan_NatR, 
+[G7]: pMYT083_nan_Int9_Vector-pMYT037_nan_HygR, 
+[G8]: pMYT083_nan_Int9_Vector-pMYT038_nan_ZeoR, 
+[G9]: pMYT084_nan_Int10_Vector-pMYT029_nan_URA3, 
+[G10]: pMYT084_nan_Int10_Vector-pMYT030_nan_LEU2, 
+[G11]: pMYT084_nan_Int10_Vector-pMYT031_nan_HIS3, 
+[G12]: pMYT084_nan_Int10_Vector-pMYT032_nan_TRP1, 
+[H1]: pMYT084_nan_Int10_Vector-pMYT033_nan_MET17, 
+[H2]: pMYT084_nan_Int10_Vector-pMYT034_nan_LYS2, 
+[H3]: pMYT084_nan_Int10_Vector-pMYT035_nan_KanR, 
+[H4]: pMYT084_nan_Int10_Vector-pMYT036_nan_NatR, 
+[H5]: pMYT084_nan_Int10_Vector-pMYT037_nan_HygR, 
+[H6]: pMYT084_nan_Int10_Vector-pMYT038_nan_ZeoR, '''}
 
 # Fragments and constructs
-inserts = {'Lvl 1 GFP Dropout L2RE': ('tube_rack', 'A1'), 'pYTK014': ('tube_rack', 'A2'), 'pYTK017': ('tube_rack', 'A3'), 'pYTK027': ('tube_rack', 'A4'), 'pYSD021': ('tube_rack', 'A5'), "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon": ('tube_rack', 'A6'), 'pYSD085': ('tube_rack', 'B1'), 'pYTK065': ('tube_rack', 'B2')} # type: ignore
-constructs = [['Lvl 1 GFP Dropout L2RE', 'pYTK014', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK017', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065'], ['Lvl 1 GFP Dropout L2RE', 'pYTK027', 'pYSD021', "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon", 'pYSD085', 'pYTK065']] # type: ignore
+inserts = {'pMYT075_nan_Int1_Vector': ('myt_plate', 'G3'), 'pMYT077_nan_Int3_Vector': ('myt_plate', 'G5'), 'pMYT078_nan_Int4_Vector': ('myt_plate', 'G6'), 'pMYT079_nan_Int5_Vector': ('myt_plate', 'G7'), 'pMYT080_nan_Int6_Vector': ('myt_plate', 'G8'), 'pMYT081_nan_Int7_Vector': ('myt_plate', 'G9'), 'pMYT082_nan_Int8_Vector': ('myt_plate', 'G10'), 'pMYT083_nan_Int9_Vector': ('myt_plate', 'G11'), 'pMYT084_nan_Int10_Vector': ('myt_plate', 'G12'), 'pMYT029_nan_URA3': ('myt_plate', 'C5'), 'pMYT030_nan_LEU2': ('myt_plate', 'C6'), 'pMYT031_nan_HIS3': ('myt_plate', 'C7'), 'pMYT032_nan_TRP1': ('myt_plate', 'C8'), 'pMYT033_nan_MET17': ('myt_plate', 'C9'), 'pMYT034_nan_LYS2': ('myt_plate', 'C10'), 'pMYT035_nan_KanR': ('myt_plate', 'C11'), 'pMYT036_nan_NatR': ('myt_plate', 'C12'), 'pMYT037_nan_HygR': ('myt_plate', 'D1'), 'pMYT038_nan_ZeoR': ('myt_plate', 'D2')} # type: ignore
+constructs = [['pMYT075_nan_Int1_Vector', 'pMYT029_nan_URA3'], ['pMYT075_nan_Int1_Vector', 'pMYT030_nan_LEU2'], ['pMYT075_nan_Int1_Vector', 'pMYT031_nan_HIS3'], ['pMYT075_nan_Int1_Vector', 'pMYT032_nan_TRP1'], ['pMYT075_nan_Int1_Vector', 'pMYT033_nan_MET17'], ['pMYT075_nan_Int1_Vector', 'pMYT034_nan_LYS2'], ['pMYT075_nan_Int1_Vector', 'pMYT035_nan_KanR'], ['pMYT075_nan_Int1_Vector', 'pMYT036_nan_NatR'], ['pMYT075_nan_Int1_Vector', 'pMYT037_nan_HygR'], ['pMYT075_nan_Int1_Vector', 'pMYT038_nan_ZeoR'], ['pMYT077_nan_Int3_Vector', 'pMYT029_nan_URA3'], ['pMYT077_nan_Int3_Vector', 'pMYT030_nan_LEU2'], ['pMYT077_nan_Int3_Vector', 'pMYT031_nan_HIS3'], ['pMYT077_nan_Int3_Vector', 'pMYT032_nan_TRP1'], ['pMYT077_nan_Int3_Vector', 'pMYT033_nan_MET17'], ['pMYT077_nan_Int3_Vector', 'pMYT034_nan_LYS2'], ['pMYT077_nan_Int3_Vector', 'pMYT035_nan_KanR'], ['pMYT077_nan_Int3_Vector', 'pMYT036_nan_NatR'], ['pMYT077_nan_Int3_Vector', 'pMYT037_nan_HygR'], ['pMYT077_nan_Int3_Vector', 'pMYT038_nan_ZeoR'], ['pMYT078_nan_Int4_Vector', 'pMYT029_nan_URA3'], ['pMYT078_nan_Int4_Vector', 'pMYT030_nan_LEU2'], ['pMYT078_nan_Int4_Vector', 'pMYT031_nan_HIS3'], ['pMYT078_nan_Int4_Vector', 'pMYT032_nan_TRP1'], ['pMYT078_nan_Int4_Vector', 'pMYT033_nan_MET17'], ['pMYT078_nan_Int4_Vector', 'pMYT034_nan_LYS2'], ['pMYT078_nan_Int4_Vector', 'pMYT035_nan_KanR'], ['pMYT078_nan_Int4_Vector', 'pMYT036_nan_NatR'], ['pMYT078_nan_Int4_Vector', 'pMYT037_nan_HygR'], ['pMYT078_nan_Int4_Vector', 'pMYT038_nan_ZeoR'], ['pMYT079_nan_Int5_Vector', 'pMYT029_nan_URA3'], ['pMYT079_nan_Int5_Vector', 'pMYT030_nan_LEU2'], ['pMYT079_nan_Int5_Vector', 'pMYT031_nan_HIS3'], ['pMYT079_nan_Int5_Vector', 'pMYT032_nan_TRP1'], ['pMYT079_nan_Int5_Vector', 'pMYT033_nan_MET17'], ['pMYT079_nan_Int5_Vector', 'pMYT034_nan_LYS2'], ['pMYT079_nan_Int5_Vector', 'pMYT035_nan_KanR'], ['pMYT079_nan_Int5_Vector', 'pMYT036_nan_NatR'], ['pMYT079_nan_Int5_Vector', 'pMYT037_nan_HygR'], ['pMYT079_nan_Int5_Vector', 'pMYT038_nan_ZeoR'], ['pMYT080_nan_Int6_Vector', 'pMYT029_nan_URA3'], ['pMYT080_nan_Int6_Vector', 'pMYT030_nan_LEU2'], ['pMYT080_nan_Int6_Vector', 'pMYT031_nan_HIS3'], ['pMYT080_nan_Int6_Vector', 'pMYT032_nan_TRP1'], ['pMYT080_nan_Int6_Vector', 'pMYT033_nan_MET17'], ['pMYT080_nan_Int6_Vector', 'pMYT034_nan_LYS2'], ['pMYT080_nan_Int6_Vector', 'pMYT035_nan_KanR'], ['pMYT080_nan_Int6_Vector', 'pMYT036_nan_NatR'], ['pMYT080_nan_Int6_Vector', 'pMYT037_nan_HygR'], ['pMYT080_nan_Int6_Vector', 'pMYT038_nan_ZeoR'], ['pMYT081_nan_Int7_Vector', 'pMYT029_nan_URA3'], ['pMYT081_nan_Int7_Vector', 'pMYT030_nan_LEU2'], ['pMYT081_nan_Int7_Vector', 'pMYT031_nan_HIS3'], ['pMYT081_nan_Int7_Vector', 'pMYT032_nan_TRP1'], ['pMYT081_nan_Int7_Vector', 'pMYT033_nan_MET17'], ['pMYT081_nan_Int7_Vector', 'pMYT034_nan_LYS2'], ['pMYT081_nan_Int7_Vector', 'pMYT035_nan_KanR'], ['pMYT081_nan_Int7_Vector', 'pMYT036_nan_NatR'], ['pMYT081_nan_Int7_Vector', 'pMYT037_nan_HygR'], ['pMYT081_nan_Int7_Vector', 'pMYT038_nan_ZeoR'], ['pMYT082_nan_Int8_Vector', 'pMYT029_nan_URA3'], ['pMYT082_nan_Int8_Vector', 'pMYT030_nan_LEU2'], ['pMYT082_nan_Int8_Vector', 'pMYT031_nan_HIS3'], ['pMYT082_nan_Int8_Vector', 'pMYT032_nan_TRP1'], ['pMYT082_nan_Int8_Vector', 'pMYT033_nan_MET17'], ['pMYT082_nan_Int8_Vector', 'pMYT034_nan_LYS2'], ['pMYT082_nan_Int8_Vector', 'pMYT035_nan_KanR'], ['pMYT082_nan_Int8_Vector', 'pMYT036_nan_NatR'], ['pMYT082_nan_Int8_Vector', 'pMYT037_nan_HygR'], ['pMYT082_nan_Int8_Vector', 'pMYT038_nan_ZeoR'], ['pMYT083_nan_Int9_Vector', 'pMYT029_nan_URA3'], ['pMYT083_nan_Int9_Vector', 'pMYT030_nan_LEU2'], ['pMYT083_nan_Int9_Vector', 'pMYT031_nan_HIS3'], ['pMYT083_nan_Int9_Vector', 'pMYT032_nan_TRP1'], ['pMYT083_nan_Int9_Vector', 'pMYT033_nan_MET17'], ['pMYT083_nan_Int9_Vector', 'pMYT034_nan_LYS2'], ['pMYT083_nan_Int9_Vector', 'pMYT035_nan_KanR'], ['pMYT083_nan_Int9_Vector', 'pMYT036_nan_NatR'], ['pMYT083_nan_Int9_Vector', 'pMYT037_nan_HygR'], ['pMYT083_nan_Int9_Vector', 'pMYT038_nan_ZeoR'], ['pMYT084_nan_Int10_Vector', 'pMYT029_nan_URA3'], ['pMYT084_nan_Int10_Vector', 'pMYT030_nan_LEU2'], ['pMYT084_nan_Int10_Vector', 'pMYT031_nan_HIS3'], ['pMYT084_nan_Int10_Vector', 'pMYT032_nan_TRP1'], ['pMYT084_nan_Int10_Vector', 'pMYT033_nan_MET17'], ['pMYT084_nan_Int10_Vector', 'pMYT034_nan_LYS2'], ['pMYT084_nan_Int10_Vector', 'pMYT035_nan_KanR'], ['pMYT084_nan_Int10_Vector', 'pMYT036_nan_NatR'], ['pMYT084_nan_Int10_Vector', 'pMYT037_nan_HygR'], ['pMYT084_nan_Int10_Vector', 'pMYT038_nan_ZeoR']] # type: ignore
 
 # Tube rack locations of reagents
-master_mix = f'B3' # type: ignore
+master_mix = f'A1' # type: ignore
 reagent_tubes = [master_mix] + list(inserts.values())
 
 # Construct Tube Locations
-construct_tubes = ['A1', 'A2', 'A3'] # type: ignore
+construct_tubes = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'E12', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'] # type: ignore
 
 # Define volumes, in uL
-vol_master_mix_per_reaction = [24.0, 24.0, 24.0] # type: ignore
-vol_per_insert_dict = {'Lvl 1 GFP Dropout L2RE': 1, 'pYTK014': 1, 'pYTK017': 1, 'pYTK027': 1, 'pYSD021': 1, "HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon": 1, 'pYSD085': 1, 'pYTK065': 1} # type: ignore
+vol_master_mix_per_reaction = [6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0] # type: ignore
+vol_per_insert_dict = {'pMYT075_nan_Int1_Vector': 1.0, 'pMYT077_nan_Int3_Vector': 1.0, 'pMYT078_nan_Int4_Vector': 1.0, 'pMYT079_nan_Int5_Vector': 1.0, 'pMYT080_nan_Int6_Vector': 1.0, 'pMYT081_nan_Int7_Vector': 1.0, 'pMYT082_nan_Int8_Vector': 1.0, 'pMYT083_nan_Int9_Vector': 1.0, 'pMYT084_nan_Int10_Vector': 1.0, 'pMYT029_nan_URA3': 1.0, 'pMYT030_nan_LEU2': 1.0, 'pMYT031_nan_HIS3': 1.0, 'pMYT032_nan_TRP1': 1.0, 'pMYT033_nan_MET17': 1.0, 'pMYT034_nan_LYS2': 1.0, 'pMYT035_nan_KanR': 1.0, 'pMYT036_nan_NatR': 1.0, 'pMYT037_nan_HygR': 1.0, 'pMYT038_nan_ZeoR': 1.0} # type: ignore
 
 # Thermocycler settings
 reaction_temp = 37 # type: ignore
 inactivation_temp = 65 # type: ignore
-reaction_vol = 30 # Total volume of the reaction
+reaction_vol = 15.0 # Total volume of the reaction
 
 def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK & TIPRACK LOADING ---
@@ -82,7 +180,7 @@ def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK ---
     if total_p20_tips > 96 or total_p300_tips > 96:
         raise Exception(
-            f"Not enough tips: Need 18 x 20uL tips and 3 x 300uL tips, "
+            f"Not enough tips: Need 270 x 20uL tips and 0 x 300uL tips, "
             "but only 96 of each are loaded. Please add more tip racks or reduce the number of reactions."
         )
 
