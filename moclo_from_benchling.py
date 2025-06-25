@@ -30,7 +30,7 @@ def get_base_pmyt_name(fragment_name):
     return None
 
 def load_data_and_display_confirmation():
-    global constructs_df, num_inserts, insert_locations, master_mix, construct_tubes, constructs, vol_h2o_list, vol_master_mix, vol_master_mix_per_reaction, myt_plate_wells
+    global constructs_df, num_inserts, insert_locations, master_mix, construct_tubes, constructs, vol_per_insert_dict, myt_plate_wells
 
     # Load volume data from CSV files
     fragments = pd.read_csv(path_fragments)
@@ -74,7 +74,7 @@ def load_data_and_display_confirmation():
     remaining_locations = locations[non_pmyt_idx:]
     master_mix = remaining_locations[0]  # Use first remaining location for MM
 
-    #Assign locations in thermocycler to constructs
+    # Assign locations in thermocycler to constructs
     construct_tubes = [f"{chr(65 + i // 12)}{i % 12 + 1}" for i in range(len(constructs_df))]
 
     # Create a dictionary mapping insert names to their locations (well only, for script compatibility)
@@ -88,38 +88,21 @@ def load_data_and_display_confirmation():
     else:
         construct_names = [f"Construct {i+1}" for i in range(len(constructs))]
 
-    # Calculate the volume of h2o needed for each construct to reach 50 uL after other volumes have been added
-    vol_buffer = 5
-    vol_assembly_mix = 1
-    vol_per_insert = 1
-    vol_h2o_list = [50 - (vol_buffer + vol_assembly_mix + len(construct)*vol_per_insert) for construct in constructs]
-
-    # Calculate master mix volume per reaction and total
-    # MM per reaction = buffer + assembly mix + h2o for that construct
-    vol_master_mix_per_reaction = [vol_buffer + vol_assembly_mix + vol_h2o for vol_h2o in vol_h2o_list]
-    vol_master_mix = sum(vol_master_mix_per_reaction)
-    # Optionally add 5% excess
-    vol_master_mix_total = int(vol_master_mix * 1.05 + 0.5)
-
-    # Calculate total volumes of each reagent for the master mix (with 5% excess)
-    n_reactions = len(constructs)
-    buffer_total = vol_buffer * n_reactions * 1.05
-    assembly_mix_total = vol_assembly_mix * n_reactions * 1.05
-    h2o_total = sum(vol_h2o_list) * 1.05
+    # --- NEW: Get per-insert volumes from CSV if available, else default to 1 ---
+    if "Volume" in fragments.columns:
+        vol_per_insert_dict = dict(zip(fragments.iloc[:, 0], fragments["Volume"]))
+    else:
+        vol_per_insert_dict = {name: 1 for name in fragments.iloc[:, 0]}
 
     # Display the confirmation window, passing MM info and MYT info
     display_confirmation_window(
         constructs_df, num_inserts, insert_locations, construct_tubes, construct_names,
-        vol_master_mix_per_reaction, vol_master_mix_total,
-        buffer_total, assembly_mix_total, h2o_total,
-        insert_plate_map
+        insert_plate_map, vol_per_insert_dict
     )
 
 def display_confirmation_window(
     constructs_df, num_inserts, insert_locations, construct_tubes, construct_names,
-    vol_master_mix_per_reaction, vol_master_mix_total,
-    buffer_total, assembly_mix_total, h2o_total,
-    insert_plate_map
+    insert_plate_map, vol_per_insert_dict
 ):
     global confirmation_window, file_name_entry, excess_entry
     confirmation_window = tk.Tk()
@@ -197,28 +180,17 @@ def display_confirmation_window(
         except Exception:
             reaction_vol = 50.0
         n_reactions = len(constructs)
-        vol_buffer = 5
-        vol_assembly_mix = 1
-        vol_per_insert = 1
-        vol_h2o_list = [
-            reaction_vol - (vol_buffer + vol_assembly_mix + len(construct) * vol_per_insert)
-            for construct in constructs
-        ]
-        vol_master_mix_per_reaction = [
-            vol_buffer + vol_assembly_mix + vol_h2o for vol_h2o in vol_h2o_list
-        ]
+        # Use per-insert volumes for each construct
+        vol_master_mix_per_reaction = []
+        for construct in constructs:
+            total_insert_vol = sum(float(vol_per_insert_dict.get(insert, 1)) for insert in construct)
+            mm_vol = reaction_vol - total_insert_vol
+            vol_master_mix_per_reaction.append(mm_vol)
         vol_master_mix = sum(vol_master_mix_per_reaction)
         vol_master_mix_total = int(vol_master_mix * (1 + excess_percent / 100) + 0.5)
-        buffer_total = vol_buffer * n_reactions * (1 + excess_percent / 100)
-        assembly_mix_total = vol_assembly_mix * n_reactions * (1 + excess_percent / 100)
-        h2o_total = sum(vol_h2o_list) * (1 + excess_percent / 100)
         mm_info_var.set(
             f"Master Mix per reaction: {vol_master_mix_per_reaction} uL\n"
-            f"Total Master Mix (with {excess_percent:.1f}% excess): {vol_master_mix_total} uL\n\n"
-            "Prepare the Master Mix with the following reagent volumes (including excess):\n"
-            f"  Buffer: {buffer_total:.2f} uL\n"
-            f"  Assembly Mix: {assembly_mix_total:.2f} uL\n"
-            f"  Water: {h2o_total:.2f} uL"
+            f"Total Master Mix (with {excess_percent:.1f}% excess): {vol_master_mix_total} uL\n"
         )
     excess_entry.bind("<KeyRelease>", update_mm_info)
     reaction_vol_entry.bind("<KeyRelease>", update_mm_info)
@@ -251,12 +223,12 @@ def display_confirmation_window(
         scrollable_frame,
         text="Confirm",
         command=lambda: generate_script(
-            file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry, reaction_vol_entry
+            file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry, reaction_vol_entry, vol_per_insert_dict
         )
     )
     confirm_button.pack(pady=20)
 
-def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry, reaction_vol_entry):
+def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry, reaction_vol_entry, vol_per_insert_dict):
     file_name = file_name_entry.get()
     try:
         excess_percent = float(excess_entry.get())
@@ -267,23 +239,12 @@ def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, e
     except Exception:
         reaction_vol = 50.0  # fallback to default if invalid
 
-    n_reactions = len(constructs)
-    vol_buffer = 5
-    vol_assembly_mix = 1
-    vol_per_insert = 1
-    # Use reaction_vol instead of 50
-    vol_h2o_list = [
-        reaction_vol - (vol_buffer + vol_assembly_mix + len(construct) * vol_per_insert)
-        for construct in constructs
-    ]
-    vol_master_mix_per_reaction = [
-        vol_buffer + vol_assembly_mix + vol_h2o for vol_h2o in vol_h2o_list
-    ]
-    vol_master_mix = sum(vol_master_mix_per_reaction)
-    vol_master_mix_total = int(vol_master_mix * (1 + excess_percent / 100) + 0.5)
-    buffer_total = vol_buffer * n_reactions * (1 + excess_percent / 100)
-    assembly_mix_total = vol_assembly_mix * n_reactions * (1 + excess_percent / 100)
-    h2o_total = sum(vol_h2o_list) * (1 + excess_percent / 100)
+    # Use per-insert volumes for each construct
+    vol_master_mix_per_reaction = []
+    for construct in constructs:
+        total_insert_vol = sum(float(vol_per_insert_dict.get(insert, 1)) for insert in construct)
+        mm_vol = reaction_vol - total_insert_vol
+        vol_master_mix_per_reaction.append(mm_vol)
 
     num_master_mix_transfers = len(construct_tubes)
     num_insert_transfers = sum(len(construct) for construct in constructs)
@@ -296,7 +257,7 @@ def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, e
         master_mix=master_mix,
         construct_tubes=construct_tubes,
         vol_master_mix_per_reaction=vol_master_mix_per_reaction,
-        vol_per_insert=1,
+        vol_per_insert=vol_per_insert_dict,  # Pass the dict!
         reaction_temp=tc_temp_activation.get(),
         inactivation_temp=tc_temp_inactivation.get(),
         constructs=constructs,
@@ -327,11 +288,9 @@ def on_myt_checkbox():
         handle_myt_toolkit_unselected()
 
 def handle_myt_toolkit_selected():
-    # Placeholder for your custom logic when MYT is selected
     print("Multiplex Yeast Toolkit option selected.")
 
 def handle_myt_toolkit_unselected():
-    # Placeholder for your custom logic when MYT is unselected
     print("Multiplex Yeast Toolkit option unselected.")
 
 # Create labels and buttons to open the file dialogs
