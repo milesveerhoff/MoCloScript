@@ -155,18 +155,30 @@ def display_confirmation_window(
     label_confirmation = tk.Label(scrollable_frame, text=confirmation_message, justify=tk.LEFT, wraplength=500)
     label_confirmation.pack(pady=10)
 
+    # --- Per-insert volume input section ---
+    tk.Label(scrollable_frame, text="Set volume (µL) for each insert:").pack(pady=5)
+    insert_volume_entries = {}
+    for insert_name in vol_per_insert_dict:
+        frame = tk.Frame(scrollable_frame)
+        frame.pack(fill="x", pady=2)
+        tk.Label(frame, text=insert_name, width=30, anchor="w").pack(side="left")
+        entry = tk.Entry(frame, width=10)
+        entry.insert(0, str(vol_per_insert_dict[insert_name]))
+        entry.pack(side="left")
+        insert_volume_entries[insert_name] = entry
+
     # Input box for total reaction volume
     reaction_vol_label = tk.Label(scrollable_frame, text="Total reaction volume per construct (µL):")
     reaction_vol_label.pack(pady=5)
     reaction_vol_entry = tk.Entry(scrollable_frame)
-    reaction_vol_entry.insert(0, "30")  # Default value
+    reaction_vol_entry.insert(0, "15")  # Default value changed to 15
     reaction_vol_entry.pack(pady=5)
 
     # --- Excess percentage input and live update (moved below info) ---
     excess_label = tk.Label(scrollable_frame, text="Excess percentage for master mix (e.g., 5 for 5%):")
     excess_label.pack(pady=5)
     excess_entry = tk.Entry(scrollable_frame)
-    excess_entry.insert(0, "0")  # Default value
+    excess_entry.insert(0, "0")  # Default value remains 0
     excess_entry.pack(pady=5)
 
     # Info label for master mix, to be updated live
@@ -184,7 +196,7 @@ def display_confirmation_window(
         # Use per-insert volumes for each construct
         vol_master_mix_per_reaction = []
         for construct in constructs:
-            total_insert_vol = sum(float(vol_per_insert_dict.get(insert, 1)) for insert in construct)
+            total_insert_vol = sum(float(insert_volume_entries[insert].get()) for insert in construct)
             mm_vol = reaction_vol - total_insert_vol
             vol_master_mix_per_reaction.append(mm_vol)
         vol_master_mix = sum(vol_master_mix_per_reaction)
@@ -195,6 +207,8 @@ def display_confirmation_window(
         )
     excess_entry.bind("<KeyRelease>", update_mm_info)
     reaction_vol_entry.bind("<KeyRelease>", update_mm_info)
+    for entry in insert_volume_entries.values():
+        entry.bind("<KeyRelease>", update_mm_info)
     update_mm_info()  # Initialize with default
 
     mm_info_label = tk.Label(scrollable_frame, textvariable=mm_info_var, justify=tk.LEFT, wraplength=500)
@@ -224,23 +238,34 @@ def display_confirmation_window(
         scrollable_frame,
         text="Confirm",
         command=lambda: generate_script(
-            file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry, reaction_vol_entry, vol_per_insert_dict
+            file_name_entry, tc_temp_activation, tc_temp_inactivation,
+            excess_entry, reaction_vol_entry, insert_volume_entries
         )
     )
     confirm_button.pack(pady=20)
 
-def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry, reaction_vol_entry, vol_per_insert_dict):
+def generate_script(
+    file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry,
+    reaction_vol_entry, insert_volume_entries
+):
     file_name = file_name_entry.get()
     try:
         excess_percent = float(excess_entry.get())
     except Exception:
-        excess_percent = 5.0  # fallback to default if invalid
+        excess_percent = 0.0  # Default to 0% excess
     try:
         reaction_vol = float(reaction_vol_entry.get())
     except Exception:
-        reaction_vol = 50.0  # fallback to default if invalid
+        reaction_vol = 15.0  # Default to 15 µL
 
     # Use per-insert volumes for each construct
+    vol_per_insert_dict = {}
+    for insert_name, entry in insert_volume_entries.items():
+        try:
+            vol_per_insert_dict[insert_name] = float(entry.get())
+        except Exception:
+            vol_per_insert_dict[insert_name] = 1.0  # fallback default
+
     vol_master_mix_per_reaction = []
     for construct in constructs:
         total_insert_vol = sum(float(vol_per_insert_dict.get(insert, 1)) for insert in construct)
@@ -264,7 +289,7 @@ def generate_script(file_name_entry, tc_temp_activation, tc_temp_inactivation, e
         constructs=constructs,
         total_p20_tips=total_p20_tips,
         total_p300_tips=total_p300_tips,
-        reaction_vol=reaction_vol_entry.get()
+        reaction_vol=reaction_vol
     )
 
     with open(file_name, 'w') as file:
