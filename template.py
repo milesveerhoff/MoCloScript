@@ -19,8 +19,10 @@ vol_per_insert_dict = {vol_per_insert} # type: ignore
 
 # Thermocycler settings
 reaction_temp = {reaction_temp} # type: ignore
+ligation_temp = {ligation_temp} # type: ignore
 inactivation_temp = {inactivation_temp} # type: ignore
 reaction_vol = {reaction_vol} # type: ignore
+num_cycles = {num_cycles} # type: ignore
 
 def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK & TIPRACK LOADING ---
@@ -192,19 +194,19 @@ def run(protocol: protocol_api.ProtocolContext):
     Volume: reaction_vol
     1. reaction_temp, 15min
     2. reaction_temp, 1.5min
-    3. 16C, 3min
-    4. GOTO step 2, 25x
-    5. 16C, 20min
+    3. ligation_temp, 3min
+    4. GOTO step 2, num_cycles x
+    5. ligation_temp, 20min
     6. 50C, 10min
     7. inactivation_temp, 10min
     8. 4C, 1 min, pause to open lid
     '''    
     tc_mod.set_lid_temperature(temperature=(inactivation_temp + 10))
     tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=900, block_max_volume=reaction_vol) # 15 min
-    for i in range(25):
+    for i in range(num_cycles):
         tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=90, block_max_volume=reaction_vol) # 1.5 min
-        tc_mod.set_block_temperature(temperature=16, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
-    tc_mod.set_block_temperature(temperature=16, hold_time_seconds=1200, block_max_volume=reaction_vol) # 20 min
+        tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
+    tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=1200, block_max_volume=reaction_vol) # 20 min
     tc_mod.set_block_temperature(temperature=50, hold_time_seconds=300, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=inactivation_temp, hold_time_seconds=600, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=4, hold_time_seconds=60) # 1 min

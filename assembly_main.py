@@ -2,6 +2,7 @@ import pandas as pd
 import tkinter as tk
 from tkinter import filedialog
 import re
+import tkinter.font as tkfont
 
 def safe_float(entry, default=1.0):
     try:
@@ -155,45 +156,62 @@ def display_confirmation_window(
         f"Loaded {num_inserts} fragments using {path_fragments} and\n"
         f"{len(constructs_df)} constructs using {path_constructs}.\n\n"
         "Reagents will be pulled from these locations:\n\n"
-        f"{tube_placements}\n\n"
+        f"{tube_placements}\n"
     )
-    label_confirmation = tk.Label(scrollable_frame, text=confirmation_message, justify=tk.LEFT, wraplength=500)
-    label_confirmation.pack(pady=10)
+    label_confirmation = tk.Label(
+        scrollable_frame,
+        text=confirmation_message,
+        justify="left",
+        wraplength=900,
+        anchor="w",
+        padx=10
+    )
+    label_confirmation.pack(pady=10, fill="x", anchor="w")
 
     # --- Per-insert volume input section (FIRST) ---
-    tk.Label(scrollable_frame, text="Volumes need to be manually calculated for 25/50 fmol of each fragment, should be between 1-20µL:").pack(pady=5)
+    tk.Label(
+        scrollable_frame,
+        text="Volumes need to be manually calculated for 25/50 fmol of each fragment, should be between >1µL:",
+        anchor="w", justify="left"
+    ).pack(pady=5, fill="x", anchor="w")
     insert_volume_entries = {}
     for insert_name in vol_per_insert_dict:
         frame = tk.Frame(scrollable_frame)
-        frame.pack(fill="x", pady=2)
+        frame.pack(fill="x", pady=2, anchor="w")
         bin_val = bin_dict.get(insert_name, "")
         label_text = f"({bin_val}) {insert_name}" if bin_val != "" else insert_name
-        tk.Label(frame, text=label_text, width=40, anchor="w").pack(side="left")
-        entry = tk.Entry(frame, width=10)
+        tk.Label(frame, text=label_text, width=40, anchor="w", justify="left").pack(side="left", padx=(0, 5))
+        entry = tk.Entry(frame, width=10, justify="left")
         entry.insert(0, str(vol_per_insert_dict[insert_name]))
-        entry.pack(side="left")
+        entry.pack(side="left", padx=(0, 5))
         insert_volume_entries[insert_name] = entry
 
     # --- Master mix per reaction input section (SECOND) ---
-    mm_per_reaction_label = tk.Label(scrollable_frame, text="Master Mix volume per reaction (µL):")
-    mm_per_reaction_label.pack(pady=5)
-    mm_per_reaction_entry = tk.Entry(scrollable_frame)
-    mm_per_reaction_entry.insert(0, "6")  # Default value is 6 µL
-    mm_per_reaction_entry.pack(pady=5)
+    mm_per_reaction_frame = tk.Frame(scrollable_frame)
+    mm_per_reaction_frame.pack(fill="x", pady=2, anchor="w")
+    mm_per_reaction_label = tk.Label(mm_per_reaction_frame, text="Master Mix volume per reaction (µL):", anchor="w", justify="left", width=40)
+    mm_per_reaction_label.pack(side="left", padx=(0, 5))
+    mm_per_reaction_entry = tk.Entry(mm_per_reaction_frame, width=10, justify="left")
+    mm_per_reaction_entry.insert(0, "6")
+    mm_per_reaction_entry.pack(side="left", padx=(0, 5))
 
     # Input box for total reaction volume
-    reaction_vol_label = tk.Label(scrollable_frame, text="Total reaction volume per construct (µL):")
-    reaction_vol_label.pack(pady=5)
-    reaction_vol_entry = tk.Entry(scrollable_frame)
-    reaction_vol_entry.insert(0, "15")  # Default value changed to 15
-    reaction_vol_entry.pack(pady=5)
+    reaction_vol_frame = tk.Frame(scrollable_frame)
+    reaction_vol_frame.pack(fill="x", pady=2, anchor="w")
+    reaction_vol_label = tk.Label(reaction_vol_frame, text="Total reaction volume per construct (µL):", anchor="w", justify="left", width=40)
+    reaction_vol_label.pack(side="left", padx=(0, 5))
+    reaction_vol_entry = tk.Entry(reaction_vol_frame, width=10, justify="left")
+    reaction_vol_entry.insert(0, "15")
+    reaction_vol_entry.pack(side="left", padx=(0, 5))
 
     # --- Excess percentage input and live update ---
-    excess_label = tk.Label(scrollable_frame, text="Excess percentage for master mix (e.g., 5 for 5%):")
-    excess_label.pack(pady=5)
-    excess_entry = tk.Entry(scrollable_frame)
-    excess_entry.insert(0, "0")  # Default value remains 0
-    excess_entry.pack(pady=5)
+    excess_frame = tk.Frame(scrollable_frame)
+    excess_frame.pack(fill="x", pady=2, anchor="w")
+    excess_label = tk.Label(excess_frame, text="Excess percentage for master mix (e.g., 5 for 5%):", anchor="w", justify="left", width=40)
+    excess_label.pack(side="left", padx=(0, 5))
+    excess_entry = tk.Entry(excess_frame, width=10, justify="left")
+    excess_entry.insert(0, "0")
+    excess_entry.pack(side="left", padx=(0, 5))
 
     # Info label for water and master mix, to be updated live
     mm_info_var = tk.StringVar()
@@ -215,13 +233,13 @@ def display_confirmation_window(
         for construct in constructs:
             total_insert_vol = sum(safe_float(insert_volume_entries[insert]) for insert in construct)
             water_vol = reaction_vol - (mm_per_reaction + total_insert_vol)
-            water_per_reaction.append(round(water_vol,2))  # Round to 2 decimal places
+            water_per_reaction.append(round(water_vol,2))
         total_mm = mm_per_reaction * n_reactions
         total_mm_with_excess = int(total_mm * (1 + excess_percent / 100) + 0.5)
         mm_info_var.set(
-            f"Master Mix per reaction: {mm_per_reaction} uL\n"
-            f"Total Master Mix (with {excess_percent:.1f}% excess): {total_mm_with_excess} uL\n"
-            f"Water per reaction (should be positive): {water_per_reaction} uL"
+            f"Total master mix (with {excess_percent:.1f}% excess): {total_mm_with_excess} uL\n"
+            f"Water per reaction (should all be positive): {water_per_reaction} uL\n"
+            f"Total water needed: {round(sum(water_per_reaction),2)} uL"
         )
     excess_entry.bind("<KeyRelease>", update_mm_info)
     reaction_vol_entry.bind("<KeyRelease>", update_mm_info)
@@ -230,42 +248,96 @@ def display_confirmation_window(
         entry.bind("<KeyRelease>", update_mm_info)
     update_mm_info()  # Initialize with default
 
-    mm_info_label = tk.Label(scrollable_frame, textvariable=mm_info_var, justify=tk.LEFT, wraplength=500)
-    mm_info_label.pack(pady=10)
+    mm_info_label = tk.Label(
+        scrollable_frame,
+        textvariable=mm_info_var,
+        justify="left",
+        anchor="w",
+        wraplength=500,
+        pady=5
+    )
+    mm_info_label.pack(pady=(10, 10), fill="x", anchor="w")
 
-    # Input box for thermocycler temps
-    tc_temp_label = tk.Label(scrollable_frame, text="Enter the Reaction and Inactivation temperatures (in °C) for thermocycler protocol:\n\nReaction Temp:")
-    tc_temp_label.pack(pady=5)
-    tc_temp_activation = tk.Entry(scrollable_frame)
-    tc_temp_activation.insert(0, "37")  # Default value
-    tc_temp_activation.pack(pady=5)
-    tc_temp_label2 = tk.Label(scrollable_frame, text="Inactivation Temp:")
-    tc_temp_label2.pack(pady=5)
-    tc_temp_inactivation = tk.Entry(scrollable_frame)
-    tc_temp_inactivation.insert(0, "65")  # Default value
-    tc_temp_inactivation.pack(pady=5)
+    # --- Thermocycler settings section (grouped, with consistent padding and style) ---
+    tc_settings_frame = tk.Frame(scrollable_frame)
+    tc_settings_frame.pack(fill="x", pady=(10, 10), anchor="w")
 
-    # Input box for file name with default value
-    file_name_label = tk.Label(scrollable_frame, text="File will be saved in the same directory as this script, and overwrite files with the same name.\n\nSave as:")
-    file_name_label.pack(pady=5)
-    file_name_entry = tk.Entry(scrollable_frame)
-    file_name_entry.insert(0, "saved_protocol.py")  # Default value
-    file_name_entry.pack(pady=5)
+    tc_settings_label = tk.Label(
+        tc_settings_frame,
+        text="Enter settings for thermocycler protocol:",
+        anchor="w",
+        justify="left",
+        pady=2
+    )
+    tc_settings_label.pack(side="top", anchor="w", fill="x", pady=(0, 8))
 
-    # Confirm button to generate the script
+    # Digestion Temp
+    digestion_frame = tk.Frame(tc_settings_frame)
+    digestion_frame.pack(fill="x", pady=2, anchor="w")
+    tc_temp_label = tk.Label(digestion_frame, text="Digestion Temp (°C):", anchor="w", justify="left", width=40)
+    tc_temp_label.pack(side="left", padx=(0, 5))
+    tc_temp_activation = tk.Entry(digestion_frame, width=10, justify="left")
+    tc_temp_activation.insert(0, "37")
+    tc_temp_activation.pack(side="left", padx=(0, 5))
+
+    # Ligation Temp
+    ligation_frame = tk.Frame(tc_settings_frame)
+    ligation_frame.pack(fill="x", pady=2, anchor="w")
+    tc_temp_label_lig = tk.Label(ligation_frame, text="Ligation Temp (°C):", anchor="w", justify="left", width=40)
+    tc_temp_label_lig.pack(side="left", padx=(0, 5))
+    tc_temp_ligation = tk.Entry(ligation_frame, width=10, justify="left")
+    tc_temp_ligation.insert(0, "16")
+    tc_temp_ligation.pack(side="left", padx=(0, 5))
+
+    # Final Inactivation Temp
+    inact_frame = tk.Frame(tc_settings_frame)
+    inact_frame.pack(fill="x", pady=2, anchor="w")
+    tc_temp_label2 = tk.Label(inact_frame, text="Final Inactivation Temp (°C):", anchor="w", justify="left", width=40)
+    tc_temp_label2.pack(side="left", padx=(0, 5))
+    tc_temp_inactivation = tk.Entry(inact_frame, width=10, justify="left")
+    tc_temp_inactivation.insert(0, "65")
+    tc_temp_inactivation.pack(side="left", padx=(0, 5))
+
+    # Number of cycles
+    cycles_frame = tk.Frame(tc_settings_frame)
+    cycles_frame.pack(fill="x", pady=2, anchor="w")
+    cycles_label = tk.Label(cycles_frame, text="Number of cycles (for digestion/ligation):", anchor="w", justify="left", width=40)
+    cycles_label.pack(side="left", padx=(0, 5))
+    cycles_entry = tk.Entry(cycles_frame, width=10, justify="left")
+    cycles_entry.insert(0, "25")
+    cycles_entry.pack(side="left", padx=(0, 5))
+
+    # --- File name section (grouped, with clear separation) ---
+    file_name_frame = tk.Frame(scrollable_frame)
+    file_name_frame.pack(fill="x", pady=(15, 5), anchor="w")
+    file_name_label = tk.Label(
+        file_name_frame,
+        text="File will be saved in the same directory as this script, and overwrite files with the same name.\nSave as:",
+        anchor="w",
+        justify="left"
+    )
+    file_name_label.pack(side="top", anchor="w", fill="x", pady=(0, 2))
+    file_name_entry = tk.Entry(file_name_frame, width=30, justify="left")
+    file_name_entry.insert(0, "saved_protocol.py")
+    file_name_entry.pack(side="top", anchor="w", padx=(0, 0), pady=(0, 2))
+
+    # Confirm button to generate the script (extra space above)
     confirm_button = tk.Button(
         scrollable_frame,
         text="Confirm",
+        anchor="w",
         command=lambda: generate_script(
             file_name_entry, tc_temp_activation, tc_temp_inactivation,
-            excess_entry, reaction_vol_entry, insert_volume_entries, mm_per_reaction_entry
+            excess_entry, reaction_vol_entry, insert_volume_entries, mm_per_reaction_entry,
+            tc_temp_ligation, cycles_entry
         )
     )
-    confirm_button.pack(pady=20)
+    confirm_button.pack(pady=(20, 10), anchor="w")
 
 def generate_script(
     file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry,
-    reaction_vol_entry, insert_volume_entries, mm_per_reaction_entry
+    reaction_vol_entry, insert_volume_entries, mm_per_reaction_entry,
+    tc_temp_ligation, cycles_entry
 ):
     file_name = file_name_entry.get()
     try:
@@ -280,6 +352,14 @@ def generate_script(
         mm_per_reaction = float(mm_per_reaction_entry.get())
     except Exception:
         mm_per_reaction = 6.0  # Default to 6 µL
+    try:
+        ligation_temp = float(tc_temp_ligation.get())
+    except Exception:
+        ligation_temp = 16.0  # Default to 16 °C
+    try:
+        num_cycles = int(cycles_entry.get())
+    except Exception:
+        num_cycles = 25  # Default to 25 cycles
 
     # Use per-insert volumes for each construct
     vol_per_insert_dict = {}
@@ -310,12 +390,14 @@ def generate_script(
         vol_per_insert=vol_per_insert_dict,
         water_per_reaction=water_per_reaction,
         reaction_temp=tc_temp_activation.get(),
+        ligation_temp=ligation_temp,
         inactivation_temp=tc_temp_inactivation.get(),
         constructs=constructs,
         total_p20_tips=total_p20_tips,
         total_p300_tips=total_p300_tips,
         reaction_vol=reaction_vol,
-        vol_master_mix_per_reaction=[mm_per_reaction] * len(constructs)
+        vol_master_mix_per_reaction=[mm_per_reaction] * len(constructs),
+        num_cycles=num_cycles
     )
 
     with open(file_name, 'w') as file:
@@ -379,7 +461,7 @@ select_button_2.pack(pady=5)
 myt_checkbox = tk.Checkbutton(root, text="Use Multiplex Yeast Toolkit (MYT)", variable=use_myt_var, command=on_myt_checkbox)
 myt_checkbox.pack(pady=5)
 
-accept_button = tk.Button(root, text="Accept", command=accept_files, state="disabled")
+accept_button = tk.Button(root, text="Confirm", command=accept_files, state="disabled")
 accept_button.pack(pady=20)
 
 # Run the application
