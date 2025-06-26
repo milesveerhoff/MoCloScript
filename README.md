@@ -27,8 +27,9 @@
 ## How to Use
 
 1. **Prepare Input Files (Export From Benchling):**
-   - **Fragments CSV:** List of DNA fragments, with columns for name, volume, etc. I.e. "Fragments" table in benchling.
-   - **Constructs CSV:** List of constructs, each row specifying the fragments to combine. I.e. "Constructs" table in benchling.
+   - **Fragments CSV:** List of DNA fragments, "Fragments" table in benchling.
+   - **Constructs CSV:** List of constructs, each row specifying the fragments to combine, "Constructs" table in benchling.
+   - Exported files will default to "table.csv" so rename or keep track of each file.
 
 2. **Launch the Application:**
    - Run `assembly_main.py` with Python 3 (requires `pandas` and `tkinter`).
@@ -66,7 +67,7 @@ See `LICENSE` for details.
 ## Acknowledgments
 
 - Inspired by [AsssemblyTron](https://github.com/PlantSynBioLab/AssemblyTron)
+- Golden gate protocols based on the [Bennett Lab](https://wiki.rice.edu/confluence/display/BIODESIGN/Golden+Gate+Assembly)
 - Incorporates the Modular Cloning (MoClo) and Golden Gate assembly standards.
 - MYT support based on the Multiplex Yeast Toolkit.
-- Thermocycler protocol based on the [Bennett Lab](https://wiki.rice.edu/confluence/display/BIODESIGN/Golden+Gate+Assembly)
 
