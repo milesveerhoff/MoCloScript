@@ -26,7 +26,7 @@
 
 ## How to Use
 
-1. **Prepare Input Files:**
+1. **Prepare Input Files (Export From Benchling):**
    - **Fragments CSV:** List of DNA fragments, with columns for name, volume, etc. I.e. "Fragments" table in benchling.
    - **Constructs CSV:** List of constructs, each row specifying the fragments to combine. I.e. "Constructs" table in benchling.
 
