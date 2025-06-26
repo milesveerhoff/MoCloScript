@@ -132,7 +132,7 @@ vol_per_insert_dict = {'pMYT075_nan_Int1_Vector': 1.0, 'pMYT077_nan_Int3_Vector'
 # Thermocycler settings
 reaction_temp = 37 # type: ignore
 inactivation_temp = 65 # type: ignore
-reaction_vol = 15.0 # Total volume of the reaction
+reaction_vol = 15.0 # type: ignore
 
 def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK & TIPRACK LOADING ---
@@ -145,43 +145,52 @@ def run(protocol: protocol_api.ProtocolContext):
     num_p20_racks = (total_p20_tips - 1) // 96 + 1 if total_p20_tips > 0 else 1
     num_p300_racks = (total_p300_tips - 1) // 96 + 1 if total_p300_tips > 0 else 1
 
-    # Assign deck slots for tip racks (avoid slots 1, 2, 4, 7 for labware/modules)
-    available_slots = ["3", "5", "6", "8", "10", "11"]
+    # Assign deck slots for tip racks 
+    available_slots = ["2", "3", "5", "6", "9"]
     p20_slots = available_slots[:num_p20_racks]
     p300_slots = available_slots[num_p20_racks:num_p20_racks+num_p300_racks]
 
     # Load tip racks
-    tips20_racks = [protocol.load_labware("opentrons_96_tiprack_20ul", slot) for slot in p20_slots]
-    tips300_racks = [protocol.load_labware("opentrons_96_tiprack_300ul", slot) for slot in p300_slots]
+    tips20_racks = []
+    tips300_racks = []
+    if total_p20_tips > 0:
+        tips20_racks = [protocol.load_labware("opentrons_96_tiprack_20ul", slot) for slot in p20_slots]
+    if total_p300_tips > 0:
+        tips300_racks = [protocol.load_labware("opentrons_96_tiprack_300ul", slot) for slot in p300_slots]
 
     # Load other labware
-    tube_rack = protocol.load_labware("opentrons_24_tuberack_nest_1.5ml_snapcap", "1")
     use_reservoir_for_mm = sum(vol_master_mix_per_reaction) > 1000
     if use_reservoir_for_mm:
-        master_mix_reservoir = protocol.load_labware("nest_12_reservoir_15ml", "5")  # Use slot 5 for master mix
+        master_mix_reservoir = protocol.load_labware("nest_12_reservoir_15ml", available_slots[num_p20_racks:num_p20_racks+num_p300_racks:num_p300_racks+1])  # Use slot 5 for master mix
     tc_mod = protocol.load_module(module_name="thermocyclerModuleV2")
     tc_plate = tc_mod.load_labware(name="opentrons_96_wellplate_200ul_pcr_full_skirt")
     temp_mod = protocol.load_module(
         module_name="temperature module gen2", location="4"
     )
     temp_tubes = temp_mod.load_labware(
-        "opentrons_24_aluminumblock_nest_1.5ml_screwcap"
+        "opentrons_24_aluminumblock_nest_1.5ml_snapcap"
     )
     # Load MYT plate if needed
     try:
-        myt_plate = protocol.load_labware("nest_96_wellplate_200ul_flat", "2")
+        myt_plate = protocol.load_labware("nest_96_wellplate_200ul_flat", "1")
     except Exception:
         myt_plate = None
 
     # Initialize pipettes with all loaded tip racks
-    p300 = protocol.load_instrument("p300_single_gen2", "right", tip_racks=tips300_racks)
-    p20 = protocol.load_instrument("p20_single_gen2", "left", tip_racks=tips20_racks)
+    if tips300_racks:
+        p300 = protocol.load_instrument("p300_single_gen2", "right", tip_racks=tips300_racks)
+    else:
+        p300 = protocol.load_instrument("p300_single_gen2", "right")
+    if tips20_racks:
+        p20 = protocol.load_instrument("p20_single_gen2", "left", tip_racks=tips20_racks)
+    else:
+        p20 = protocol.load_instrument("p20_single_gen2", "left")
 
     # --- TIP USAGE CHECK ---
-    if total_p20_tips > 96 or total_p300_tips > 96:
+    if (total_p20_tips + total_p300_tips) > 480:
         raise Exception(
             f"Not enough tips: Need 270 x 20uL tips and 0 x 300uL tips, "
-            "but only 96 of each are loaded. Please add more tip racks or reduce the number of reactions."
+            "but only 5 racks are loaded. Please reduce the number of reactions."
         )
 
     # Initialize thermocycler
@@ -232,14 +241,7 @@ def run(protocol: protocol_api.ProtocolContext):
     if use_reservoir_for_mm:
         mm_source = master_mix_reservoir[master_mix] if not isinstance(master_mix, (tuple, list)) else master_mix_reservoir[master_mix[1]]
     else:
-        if isinstance(master_mix, (tuple, list)):
-            plate_type, well = master_mix
-            if plate_type == "myt_plate" and myt_plate is not None:
-                mm_source = myt_plate[well]
-            else:
-                mm_source = tube_rack[well]
-        else:
-            mm_source = tube_rack[master_mix]
+        mm_source = temp_tubes[master_mix]
 
     # Calculate water needed for each well to reach the correct total volume
     wells_needing_water = []
@@ -250,11 +252,11 @@ def run(protocol: protocol_api.ProtocolContext):
         water_needed = reaction_vol - (vol_master_mix_per_reaction[index] + total_insert_vol)
         if water_needed > 0:
             wells_needing_water.append(tc_plate[construct_tube])
-            water_vols.append(water_needed)            
+            water_vols.append(water_needed)
     if wells_needing_water:
         p20.pick_up_tip()
         for vol, dest in zip(water_vols, wells_needing_water):
-            p20.transfer(vol, tube_rack['A2'], dest, new_tip='never')
+            p20.transfer(vol, temp_tubes['A2'], dest, new_tip='never')
         p20.drop_tip()
 
     # Now distribute master mix to each well
@@ -276,9 +278,9 @@ def run(protocol: protocol_api.ProtocolContext):
                 if plate_type == "myt_plate" and myt_plate is not None:
                     pipette_transfer(insert_vol, myt_plate[well], tc_plate[construct_tube], pipette=p20)
                 else:
-                    pipette_transfer(insert_vol, tube_rack[well], tc_plate[construct_tube], pipette=p20)
+                    pipette_transfer(insert_vol, temp_tubes[well], tc_plate[construct_tube], pipette=p20)
             else:
-                pipette_transfer(insert_vol, tube_rack[insert_location], tc_plate[construct_tube], pipette=p20)
+                pipette_transfer(insert_vol, temp_tubes[insert_location], tc_plate[construct_tube], pipette=p20)
             # After the last insert, custom mix in the destination well with the same tip, then drop
             if i == len(construct_inserts) - 1:
                 custom_mix(
@@ -292,8 +294,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 )
             p20.drop_tip()
 
-    pause("Thermocycler protocol will begin after pipetting.")
-
+    # Close the thermocycler lid before starting the protocol
     tc_mod.close_lid()
 
     '''
@@ -322,7 +323,7 @@ def run(protocol: protocol_api.ProtocolContext):
     tc_mod.deactivate_lid() # Deactivate lid to allow for pipetting
     protocol.delay(seconds=5) # Wait for lid to cool down
 
-    pause("Thermocycler protocol complete. Press continue to open thermocycler lid.")
+    pause("Thermocycler protocol complete, holding at 4 Celsius. Press continue to open thermocycler lid.")
     tc_mod.open_lid() # Open lid for pipetting
 
 def custom_mix(pipette, well, mixreps=3, vol=20, z_asp=1, z_disp_source_mix=8, z_disp_destination=8):

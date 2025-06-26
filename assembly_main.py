@@ -11,7 +11,7 @@ def safe_float(entry, default=1.0):
         return default
 
 # Template script with placeholders
-template_script = open("template_script.py").read()
+template = open("template.py").read()
 
 def select_file_1():
     global path_fragments
@@ -37,11 +37,14 @@ def get_base_pmyt_name(fragment_name):
     return None
 
 def load_data_and_display_confirmation():
-    global constructs_df, num_inserts, insert_locations, master_mix, construct_tubes, constructs, vol_per_insert_dict, myt_plate_wells
+    global constructs_df, num_inserts, insert_locations, master_mix, construct_tubes, constructs, vol_per_insert_dict, myt_plate_wells, water_loc
 
     # Load volume data from CSV files
     fragments = pd.read_csv(path_fragments)
     constructs_df = pd.read_csv(path_constructs)
+
+    # Extract Bin values for each insert (assumes columns: [Name, ..., Bin, ...])
+    bin_dict = dict(zip(fragments.iloc[:, 0], fragments["Bin"]))
 
     # --- Check for "pMYT" in fragment names ---
     fragment_names = fragments.iloc[:, 0].astype(str)
@@ -80,6 +83,7 @@ def load_data_and_display_confirmation():
 
     remaining_locations = locations[non_pmyt_idx:]
     master_mix = remaining_locations[0]  # Use first remaining location for MM
+    water_loc = remaining_locations[1]
 
     # Assign locations in thermocycler to constructs
     construct_tubes = [f"{chr(65 + i // 12)}{i % 12 + 1}" for i in range(len(constructs_df))]
@@ -104,17 +108,18 @@ def load_data_and_display_confirmation():
     # Display the confirmation window, passing MM info and MYT info
     display_confirmation_window(
         constructs_df, num_inserts, insert_locations, construct_tubes, construct_names,
-        insert_plate_map, vol_per_insert_dict
+        insert_plate_map, vol_per_insert_dict, bin_dict
     )
 
 def display_confirmation_window(
     constructs_df, num_inserts, insert_locations, construct_tubes, construct_names,
-    insert_plate_map, vol_per_insert_dict
+    insert_plate_map, vol_per_insert_dict, bin_dict
 ):
     global confirmation_window, file_name_entry, excess_entry
     confirmation_window = tk.Tk()
     confirmation_window.title("Confirm Settings")
     confirmation_window.configure(padx=20, pady=20)
+    confirmation_window.geometry("1000x600")  # Set a default size
 
     # Create a canvas and scrollbar for scrollable content
     canvas = tk.Canvas(confirmation_window)
@@ -139,28 +144,31 @@ def display_confirmation_window(
         if plate == "myt_plate":
             tube_placements += f"[{well}] (MYT Plate): {insert}, \n"
         else:
-            tube_placements += f"[{well}] (Tube Rack): {insert}, \n"
-    tube_placements += f"\n[{master_mix}]: Master Mix (MM), \n"
-    tube_placements += "\nConstructs will be built at the following locations in the thermocycler module:\n"
+            tube_placements += f"[{well}] (Temp Module): {insert}, \n"
+    tube_placements += f"\n[{master_mix}] (Temp Module): Master Mix,"
+    tube_placements += f"\n[{water_loc}] (Temp Module): Molecular Grade Water, \n"
+    tube_placements += "\nConstructs will be built in the thermocycler module:\n\n"
     tube_placements += "\n".join([f"[{location}]: {construct_names[i]}, " for i, location in enumerate(construct_tubes)])
 
     # Confirmation message
     confirmation_message = (
-        f"Loaded {len(constructs_df)} constructs using {path_constructs} and\n"
-        f"{num_inserts} fragments using {path_fragments}.\n\n"
-        "Place reagents at their respective locations:\n\n"
+        f"Loaded {num_inserts} fragments using {path_fragments} and\n"
+        f"{len(constructs_df)} constructs using {path_constructs}.\n\n"
+        "Reagents will be pulled from these locations:\n\n"
         f"{tube_placements}\n\n"
     )
     label_confirmation = tk.Label(scrollable_frame, text=confirmation_message, justify=tk.LEFT, wraplength=500)
     label_confirmation.pack(pady=10)
 
     # --- Per-insert volume input section (FIRST) ---
-    tk.Label(scrollable_frame, text="Set volume (µL) needed for each insert:").pack(pady=5)
+    tk.Label(scrollable_frame, text="Volumes need to be manually calculated for 25/50 fmol of each fragment, should be between 1-20µL:").pack(pady=5)
     insert_volume_entries = {}
     for insert_name in vol_per_insert_dict:
         frame = tk.Frame(scrollable_frame)
         frame.pack(fill="x", pady=2)
-        tk.Label(frame, text=insert_name, width=30, anchor="w").pack(side="left")
+        bin_val = bin_dict.get(insert_name, "")
+        label_text = f"({bin_val}) {insert_name}" if bin_val != "" else insert_name
+        tk.Label(frame, text=label_text, width=40, anchor="w").pack(side="left")
         entry = tk.Entry(frame, width=10)
         entry.insert(0, str(vol_per_insert_dict[insert_name]))
         entry.pack(side="left")
@@ -213,7 +221,7 @@ def display_confirmation_window(
         mm_info_var.set(
             f"Master Mix per reaction: {mm_per_reaction} uL\n"
             f"Total Master Mix (with {excess_percent:.1f}% excess): {total_mm_with_excess} uL\n"
-            f"Water per reaction: {water_per_reaction} uL"
+            f"Water per reaction (should be positive): {water_per_reaction} uL"
         )
     excess_entry.bind("<KeyRelease>", update_mm_info)
     reaction_vol_entry.bind("<KeyRelease>", update_mm_info)
@@ -238,7 +246,7 @@ def display_confirmation_window(
     tc_temp_inactivation.pack(pady=5)
 
     # Input box for file name with default value
-    file_name_label = tk.Label(scrollable_frame, text="File will be saved in the same directory as this script, and overwrite files with the same name.\nSave as:")
+    file_name_label = tk.Label(scrollable_frame, text="File will be saved in the same directory as this script, and overwrite files with the same name.\n\nSave as:")
     file_name_label.pack(pady=5)
     file_name_entry = tk.Entry(scrollable_frame)
     file_name_entry.insert(0, "saved_protocol.py")  # Default value
@@ -293,7 +301,7 @@ def generate_script(
     total_p20_tips = num_insert_transfers + num_master_mix_transfers  # assuming all MM and inserts use p20
     total_p300_tips = 0  # not used if all volumes < 20
 
-    script = template_script.format(
+    script = template.format(
         tube_placements=tube_placements,
         inserts=insert_locations,
         master_mix=master_mix,
@@ -322,7 +330,9 @@ path_constructs = ""
 
 # Create the main window
 root = tk.Tk()
-root.title("Assembly - Select Input Files")
+root.title("Assembly - Select Benchling Files")
+root.configure(padx=20, pady=20)  # Add horizontal (and vertical) padding
+root.geometry("400x220")  # Set a default size
 
 # Add a variable to track the checkbox state
 use_myt_var = tk.BooleanVar(value=False)
