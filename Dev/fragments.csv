@@ -1,9 +1,0 @@
-Sequence,Bin,Start,End,Length,Orientation,Type IIS enzyme,Fragment production method,Status
-Lvl 1 GFP Dropout L2RE,Backbone,1225,194,3812,Forward,BsaI,Use existing cut sites,Success
-pYTK014,Insert 1,10,718,709,Forward,BsaI,Use existing cut sites,Success
-pYTK017,Insert 1,10,718,709,Forward,BsaI,Use existing cut sites,Success
-pYTK027,Insert 1,10,718,709,Forward,BsaI,Use existing cut sites,Success
-pYSD021,Insert 2,10,273,264,Forward,BsaI,Use existing cut sites,Success
-"HFB1 Fragment Sequence, GenBank KU173825 + moclo ends for 3b' part, no stop codon",Insert 3,21,269,249,Forward,BsaI,Use existing cut sites,Success
-pYSD085,Insert 4,10,2167,2158,Forward,BsaI,Use existing cut sites,Success
-pYTK065,Insert 5,10,238,229,Forward,BsaI,Use existing cut sites,Success
