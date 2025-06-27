@@ -1,45 +1,49 @@
 import opentrons.execute # type: ignore
 from opentrons import protocol_api # type: ignore
-metadata = {"apiLevel": "2.22", "description": '''[C7] (MYT Plate): pMYT031_nan_HIS3, 
-[C8] (MYT Plate): pMYT032_nan_TRP1, 
-[C12] (MYT Plate): pMYT036_nan_NatR, 
-[D1] (MYT Plate): pMYT037_nan_HygR, 
-[G9] (MYT Plate): pMYT081_nan_Int7_Vector, 
-[G11] (MYT Plate): pMYT083_nan_Int9_Vector, 
+metadata = {"apiLevel": "2.22", "description": '''[D9] (MYT Plate, Slot 2): pMYT045_nan_34_Assembly_Cassette, 
+[A5] (MYT Plate, Slot 2): pMYT005_2_pLacFEC, 
+[A1] (Temp Module): sgrna-rfp_3_a6+r2+r14_No-self-A, 
+[A2] (Temp Module): sgrna-rfp_3_a6+r2+a16_No-other-R, 
+[A3] (Temp Module): sgrna-rfp_3_a6+r2_No-fb, 
+[A4] (Temp Module): sgrna-rfp_3_a6_Rep-only, 
+[E8] (YTK Plate, Slot 3): pYTK056_4_tTDH1, 
 
-[A1] (Temp Module): Master Mix,
-[A2] (Temp Module): Molecular Grade Water, 
+[A5] (Temp Module): Master Mix,
+[A6] (Temp Module): Molecular Grade Water, 
 
 Constructs will be built in the thermocycler module:
 
-[A1]: pMYT081_nan_Int7_Vector-pMYT031_nan_HIS3, 
-[A2]: pMYT081_nan_Int7_Vector-pMYT032_nan_TRP1, 
-[A3]: pMYT081_nan_Int7_Vector-pMYT036_nan_NatR, 
-[A4]: pMYT081_nan_Int7_Vector-pMYT037_nan_HygR, 
-[A5]: pMYT083_nan_Int9_Vector-pMYT031_nan_HIS3, 
-[A6]: pMYT083_nan_Int9_Vector-pMYT032_nan_TRP1, 
-[A7]: pMYT083_nan_Int9_Vector-pMYT036_nan_NatR, 
-[A8]: pMYT083_nan_Int9_Vector-pMYT037_nan_HygR, '''}
+[A1]: pMYT045_nan_34_Assembly_Cassette-pMYT005_2_pLacFEC-sgrna-rfp_3_a6+r2+r14_No-self-A-pYTK056_4_tTDH1, 
+[A2]: pMYT045_nan_34_Assembly_Cassette-pMYT005_2_pLacFEC-sgrna-rfp_3_a6+r2+a16_No-other-R-pYTK056_4_tTDH1, 
+[A3]: pMYT045_nan_34_Assembly_Cassette-pMYT005_2_pLacFEC-sgrna-rfp_3_a6+r2_No-fb-pYTK056_4_tTDH1, 
+[A4]: pMYT045_nan_34_Assembly_Cassette-pMYT005_2_pLacFEC-sgrna-rfp_3_a6_Rep-only-pYTK056_4_tTDH1, 
+
+Toolkit plate locations on deck:
+  MYT Plate: Slot 2
+  YTK Plate: Slot 3
+'''}
 
 # Fragments and constructs
-inserts = {'pMYT031_nan_HIS3': ('myt_plate', 'C7'), 'pMYT032_nan_TRP1': ('myt_plate', 'C8'), 'pMYT036_nan_NatR': ('myt_plate', 'C12'), 'pMYT037_nan_HygR': ('myt_plate', 'D1'), 'pMYT081_nan_Int7_Vector': ('myt_plate', 'G9'), 'pMYT083_nan_Int9_Vector': ('myt_plate', 'G11')} # type: ignore
-constructs = [['pMYT081_nan_Int7_Vector', 'pMYT031_nan_HIS3'], ['pMYT081_nan_Int7_Vector', 'pMYT032_nan_TRP1'], ['pMYT081_nan_Int7_Vector', 'pMYT036_nan_NatR'], ['pMYT081_nan_Int7_Vector', 'pMYT037_nan_HygR'], ['pMYT083_nan_Int9_Vector', 'pMYT031_nan_HIS3'], ['pMYT083_nan_Int9_Vector', 'pMYT032_nan_TRP1'], ['pMYT083_nan_Int9_Vector', 'pMYT036_nan_NatR'], ['pMYT083_nan_Int9_Vector', 'pMYT037_nan_HygR']] # type: ignore
+inserts = {'pMYT045_nan_34_Assembly_Cassette': ('MYT', 'D9'), 'pMYT005_2_pLacFEC': ('MYT', 'A5'), 'sgrna-rfp_3_a6+r2+r14_No-self-A': ('tube_rack', 'A1'), 'sgrna-rfp_3_a6+r2+a16_No-other-R': ('tube_rack', 'A2'), 'sgrna-rfp_3_a6+r2_No-fb': ('tube_rack', 'A3'), 'sgrna-rfp_3_a6_Rep-only': ('tube_rack', 'A4'), 'pYTK056_4_tTDH1': ('YTK', 'E8')} # type: ignore
+constructs = [['pMYT045_nan_34_Assembly_Cassette', 'pMYT005_2_pLacFEC', 'sgrna-rfp_3_a6+r2+r14_No-self-A', 'pYTK056_4_tTDH1'], ['pMYT045_nan_34_Assembly_Cassette', 'pMYT005_2_pLacFEC', 'sgrna-rfp_3_a6+r2+a16_No-other-R', 'pYTK056_4_tTDH1'], ['pMYT045_nan_34_Assembly_Cassette', 'pMYT005_2_pLacFEC', 'sgrna-rfp_3_a6+r2_No-fb', 'pYTK056_4_tTDH1'], ['pMYT045_nan_34_Assembly_Cassette', 'pMYT005_2_pLacFEC', 'sgrna-rfp_3_a6_Rep-only', 'pYTK056_4_tTDH1']] # type: ignore
 
 # Tube rack locations of reagents
-master_mix = f'A1' # type: ignore
+master_mix = f'A5' # type: ignore
 reagent_tubes = [master_mix] + list(inserts.values())
 
 # Construct Tube Locations
-construct_tubes = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8'] # type: ignore
+construct_tubes = ['A1', 'A2', 'A3', 'A4'] # type: ignore
 
 # Define volumes, in uL
-vol_master_mix_per_reaction = [6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0] # type: ignore
-vol_per_insert_dict = {'pMYT031_nan_HIS3': 1.0, 'pMYT032_nan_TRP1': 1.0, 'pMYT036_nan_NatR': 1.0, 'pMYT037_nan_HygR': 1.0, 'pMYT081_nan_Int7_Vector': 1.0, 'pMYT083_nan_Int9_Vector': 1.0} # type: ignore
+vol_master_mix_per_reaction = [6.0, 6.0, 6.0, 6.0] # type: ignore
+vol_per_insert_dict = {'pMYT045_nan_34_Assembly_Cassette': 1.0, 'pMYT005_2_pLacFEC': 1.0, 'sgrna-rfp_3_a6+r2+r14_No-self-A': 1.0, 'sgrna-rfp_3_a6+r2+a16_No-other-R': 1.0, 'sgrna-rfp_3_a6+r2_No-fb': 1.0, 'sgrna-rfp_3_a6_Rep-only': 1.0, 'pYTK056_4_tTDH1': 1.0} # type: ignore
 
 # Thermocycler settings
 reaction_temp = 37 # type: ignore
+ligation_temp = 16.0 # type: ignore
 inactivation_temp = 65 # type: ignore
 reaction_vol = 15.0 # type: ignore
+num_cycles = 25 # type: ignore
 
 def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK & TIPRACK LOADING ---
@@ -49,13 +53,15 @@ def run(protocol: protocol_api.ProtocolContext):
     total_p300_tips = sum(1 for v in vol_master_mix_per_reaction if v >= 20)
 
     # Calculate how many tip racks are needed (each rack has 96 tips)
-    num_p20_racks = (total_p20_tips - 1) // 96 + 1 if total_p20_tips > 0 else 1
-    num_p300_racks = (total_p300_tips - 1) // 96 + 1 if total_p300_tips > 0 else 1
+    num_p20_racks = (total_p20_tips - 1) // 96 + 1 if total_p20_tips > 0 else 0
+    num_p300_racks = (total_p300_tips - 1) // 96 + 1 if total_p300_tips > 0 else 0
 
-    # Assign deck slots for tip racks 
-    available_slots = ["2", "3", "5", "6", "9"]
+    # Assign deck slots for tip racks and toolkit plates
+    available_slots = ["1", "2", "3", "5", "6", "9"]
+
     p20_slots = available_slots[:num_p20_racks]
     p300_slots = available_slots[num_p20_racks:num_p20_racks+num_p300_racks]
+    toolkit_slots = available_slots[num_p20_racks+num_p300_racks:]
 
     # Load tip racks
     tips20_racks = []
@@ -64,7 +70,6 @@ def run(protocol: protocol_api.ProtocolContext):
         tips20_racks = [protocol.load_labware("opentrons_96_tiprack_20ul", slot) for slot in p20_slots]
     if total_p300_tips > 0:
         tips300_racks = [protocol.load_labware("opentrons_96_tiprack_300ul", slot) for slot in p300_slots]
-
     # Load other labware
     use_reservoir_for_mm = sum(vol_master_mix_per_reaction) > 1000
     if use_reservoir_for_mm:
@@ -77,11 +82,19 @@ def run(protocol: protocol_api.ProtocolContext):
     temp_tubes = temp_mod.load_labware(
         "opentrons_24_aluminumblock_nest_1.5ml_snapcap"
     )
-    # Load MYT plate if needed
-    try:
-        myt_plate = protocol.load_labware("nest_96_wellplate_200ul_flat", "1")
-    except Exception:
-        myt_plate = None
+    # --- Load all toolkit plates needed ---
+    toolkit_plate_types = set()
+    for val in inserts.values():
+        if isinstance(val, (tuple, list)):
+            plate_type, _ = val
+            if plate_type not in ("tube_rack", "temp_module"):
+                toolkit_plate_types.add(plate_type)
+    toolkit_plates = {}
+    for idx, plate_type in enumerate(sorted(toolkit_plate_types)):
+        if idx < len(toolkit_slots):
+            toolkit_plates[plate_type] = protocol.load_labware("nest_96_wellplate_200ul_flat", toolkit_slots[idx])
+        else:
+            toolkit_plates[plate_type] = None
 
     # Initialize pipettes with all loaded tip racks
     if tips300_racks:
@@ -96,7 +109,7 @@ def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK ---
     if (total_p20_tips + total_p300_tips) > 480:
         raise Exception(
-            f"Not enough tips: Need 24 x 20uL tips and 0 x 300uL tips, "
+            f"Not enough tips: Need 20 x 20uL tips and 0 x 300uL tips, "
             "but only 5 racks are loaded. Please reduce the number of reactions."
         )
 
@@ -182,8 +195,8 @@ def run(protocol: protocol_api.ProtocolContext):
             # Decide which plate to use for each insert
             if isinstance(insert_location, tuple) or isinstance(insert_location, list):
                 plate_type, well = insert_location
-                if plate_type == "myt_plate" and myt_plate is not None:
-                    pipette_transfer(insert_vol, myt_plate[well], tc_plate[construct_tube], pipette=p20)
+                if plate_type in toolkit_plates and toolkit_plates[plate_type] is not None:
+                    pipette_transfer(insert_vol, toolkit_plates[plate_type][well], tc_plate[construct_tube], pipette=p20)
                 else:
                     pipette_transfer(insert_vol, temp_tubes[well], tc_plate[construct_tube], pipette=p20)
             else:
@@ -211,19 +224,19 @@ def run(protocol: protocol_api.ProtocolContext):
     Volume: reaction_vol
     1. reaction_temp, 15min
     2. reaction_temp, 1.5min
-    3. 16C, 3min
-    4. GOTO step 2, 25x
-    5. 16C, 20min
+    3. ligation_temp, 3min
+    4. GOTO step 2, num_cycles x
+    5. ligation_temp, 20min
     6. 50C, 10min
     7. inactivation_temp, 10min
     8. 4C, 1 min, pause to open lid
     '''    
     tc_mod.set_lid_temperature(temperature=(inactivation_temp + 10))
     tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=900, block_max_volume=reaction_vol) # 15 min
-    for i in range(25):
+    for i in range(num_cycles):
         tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=90, block_max_volume=reaction_vol) # 1.5 min
-        tc_mod.set_block_temperature(temperature=16, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
-    tc_mod.set_block_temperature(temperature=16, hold_time_seconds=1200, block_max_volume=reaction_vol) # 20 min
+        tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
+    tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=1200, block_max_volume=reaction_vol) # 20 min
     tc_mod.set_block_temperature(temperature=50, hold_time_seconds=300, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=inactivation_temp, hold_time_seconds=600, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=4, hold_time_seconds=60) # 1 min
