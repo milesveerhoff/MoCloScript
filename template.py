@@ -32,13 +32,15 @@ def run(protocol: protocol_api.ProtocolContext):
     total_p300_tips = sum(1 for v in vol_master_mix_per_reaction if v >= 20)
 
     # Calculate how many tip racks are needed (each rack has 96 tips)
-    num_p20_racks = (total_p20_tips - 1) // 96 + 1 if total_p20_tips > 0 else 1
-    num_p300_racks = (total_p300_tips - 1) // 96 + 1 if total_p300_tips > 0 else 1
+    num_p20_racks = (total_p20_tips - 1) // 96 + 1 if total_p20_tips > 0 else 0
+    num_p300_racks = (total_p300_tips - 1) // 96 + 1 if total_p300_tips > 0 else 0
 
-    # Assign deck slots for tip racks 
-    available_slots = ["2", "3", "5", "6", "9"]
+    # Assign deck slots for tip racks and toolkit plates
+    available_slots = ["1", "2", "3", "5", "6", "9"]
+
     p20_slots = available_slots[:num_p20_racks]
     p300_slots = available_slots[num_p20_racks:num_p20_racks+num_p300_racks]
+    toolkit_slots = available_slots[num_p20_racks+num_p300_racks:]
 
     # Load tip racks
     tips20_racks = []
@@ -47,7 +49,6 @@ def run(protocol: protocol_api.ProtocolContext):
         tips20_racks = [protocol.load_labware("opentrons_96_tiprack_20ul", slot) for slot in p20_slots]
     if total_p300_tips > 0:
         tips300_racks = [protocol.load_labware("opentrons_96_tiprack_300ul", slot) for slot in p300_slots]
-
     # Load other labware
     use_reservoir_for_mm = sum(vol_master_mix_per_reaction) > 1000
     if use_reservoir_for_mm:
@@ -60,11 +61,19 @@ def run(protocol: protocol_api.ProtocolContext):
     temp_tubes = temp_mod.load_labware(
         "opentrons_24_aluminumblock_nest_1.5ml_snapcap"
     )
-    # Load MYT plate if needed
-    try:
-        myt_plate = protocol.load_labware("nest_96_wellplate_200ul_flat", "1")
-    except Exception:
-        myt_plate = None
+    # --- Load all toolkit plates needed ---
+    toolkit_plate_types = set()
+    for val in inserts.values():
+        if isinstance(val, (tuple, list)):
+            plate_type, _ = val
+            if plate_type not in ("tube_rack", "temp_module"):
+                toolkit_plate_types.add(plate_type)
+    toolkit_plates = {{}}
+    for idx, plate_type in enumerate(sorted(toolkit_plate_types)):
+        if idx < len(toolkit_slots):
+            toolkit_plates[plate_type] = protocol.load_labware("nest_96_wellplate_200ul_flat", toolkit_slots[idx])
+        else:
+            toolkit_plates[plate_type] = None
 
     # Initialize pipettes with all loaded tip racks
     if tips300_racks:
@@ -165,8 +174,8 @@ def run(protocol: protocol_api.ProtocolContext):
             # Decide which plate to use for each insert
             if isinstance(insert_location, tuple) or isinstance(insert_location, list):
                 plate_type, well = insert_location
-                if plate_type == "myt_plate" and myt_plate is not None:
-                    pipette_transfer(insert_vol, myt_plate[well], tc_plate[construct_tube], pipette=p20)
+                if plate_type in toolkit_plates and toolkit_plates[plate_type] is not None:
+                    pipette_transfer(insert_vol, toolkit_plates[plate_type][well], tc_plate[construct_tube], pipette=p20)
                 else:
                     pipette_transfer(insert_vol, temp_tubes[well], tc_plate[construct_tube], pipette=p20)
             else:

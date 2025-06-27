@@ -30,15 +30,8 @@ def accept_files():
     root.destroy()
     load_data_and_display_confirmation()
 
-def get_base_pmyt_name(fragment_name):
-    """Extracts the base pMYT name (e.g., pMYT029) from a fragment name like pMYT029_nan_URA3."""
-    match = re.match(r"(pMYT\d+)", fragment_name)
-    if match:
-        return match.group(1)
-    return None
-
 def load_data_and_display_confirmation():
-    global constructs_df, num_inserts, insert_locations, master_mix, construct_tubes, constructs, vol_per_insert_dict, myt_plate_wells, water_loc
+    global constructs_df, num_inserts, insert_locations, master_mix, construct_tubes, constructs, vol_per_insert_dict, toolkit_plate_wells, water_loc
 
     # Load volume data from CSV files
     fragments = pd.read_csv(path_fragments)
@@ -47,17 +40,35 @@ def load_data_and_display_confirmation():
     # Extract Bin values for each insert (assumes columns: [Name, ..., Bin, ...])
     bin_dict = dict(zip(fragments.iloc[:, 0], fragments["Bin"]))
 
-    # --- Check for "pMYT" in fragment names ---
+    # --- Check for toolkit fragments in fragment names ---
     fragment_names = fragments.iloc[:, 0].astype(str)
-    has_pmyt = fragment_names.str.contains("pMYT").any()
 
-    # Only use MYT_Parts_Data.csv if the checkbox is selected and pMYT fragments are present
-    myt_locations = {}
-    myt_plate_wells = {}
-    if use_myt_var.get() and has_pmyt:
-        myt_parts_df = pd.read_csv("MYT_Parts_Data.csv")
-        myt_locations = dict(zip(myt_parts_df['Plasmid name'].astype(str), myt_parts_df['Plate position'].astype(str)))
-        myt_plate_wells = {plasmid: well for plasmid, well in myt_locations.items()}
+    toolkit_locations = {}  # {toolkit_name: {plasmid_name: position}}
+    toolkit_plate_wells = {}  # {fragment_name: (plate, position)}
+    toolkit_keys = set()
+    if use_myt_var.get():
+        toolkit_df = pd.read_csv("toolkit_data.csv")
+        # Build a mapping: {plasmid_name: (plate, position)}
+        for _, row in toolkit_df.iterrows():
+            toolkit = str(row["Plate"])
+            toolkit_keys.add(toolkit)
+            if toolkit not in toolkit_locations:
+                toolkit_locations[toolkit] = {}
+            toolkit_locations[toolkit][row["Name"]] = row["Position"]
+
+        # For each fragment, if its name contains a toolkit key, and matches a toolkit entry, assign it
+        for frag_name in fragment_names:
+            found = False
+            for toolkit in toolkit_keys:
+                if toolkit in frag_name:
+                    # Try to find a matching toolkit entry for this fragment
+                    for plasmid_name, position in toolkit_locations[toolkit].items():
+                        if plasmid_name in frag_name:
+                            toolkit_plate_wells[frag_name] = (toolkit, position)
+                            found = True
+                            break
+                if found:
+                    break
 
     # Remove unnecessary columns
     constructs_df.drop(columns=[col for col in constructs_df.columns if "Overhang" in col], inplace=True, errors='ignore')
@@ -66,23 +77,24 @@ def load_data_and_display_confirmation():
     # Calculate the number of inserts
     num_inserts = len(fragments)
 
-    # Define locations for non-pMYT fragments
+    # Define locations for non-toolkit fragments
     locations = [f"{chr(65 + i // 6)}{i % 6 + 1}" for i in range(24)]
     inserts = []
     insert_plate_map = {}  # Map fragment name to (plate, well)
 
-    non_pmyt_idx = 0
+    non_toolkit_idx = 0
     for i, frag_name in enumerate(fragment_names):
-        base_pmyt = get_base_pmyt_name(frag_name)
-        if use_myt_var.get() and base_pmyt and base_pmyt in myt_locations:
-            insert_plate_map[frag_name] = ("myt_plate", myt_locations[base_pmyt])
-            inserts.append(("myt_plate", myt_locations[base_pmyt]))
+        # Check if fragment is in any toolkit
+        if use_myt_var.get() and frag_name in toolkit_plate_wells:
+            toolkit_plate, toolkit_position = toolkit_plate_wells[frag_name]
+            insert_plate_map[frag_name] = (toolkit_plate, toolkit_position)
+            inserts.append((toolkit_plate, toolkit_position))
         else:
-            insert_plate_map[frag_name] = ("tube_rack", locations[non_pmyt_idx])
-            inserts.append(("tube_rack", locations[non_pmyt_idx]))
-            non_pmyt_idx += 1
+            insert_plate_map[frag_name] = ("tube_rack", locations[non_toolkit_idx])
+            inserts.append(("tube_rack", locations[non_toolkit_idx]))
+            non_toolkit_idx += 1
 
-    remaining_locations = locations[non_pmyt_idx:]
+    remaining_locations = locations[non_toolkit_idx:]
     master_mix = remaining_locations[0]  # Use first remaining location for MM
     water_loc = remaining_locations[1]
 
@@ -106,7 +118,7 @@ def load_data_and_display_confirmation():
     else:
         vol_per_insert_dict = {name: 1 for name in fragments.iloc[:, 0]}
 
-    # Display the confirmation window, passing MM info and MYT info
+    # Display the confirmation window, passing MM info and toolkit info
     display_confirmation_window(
         constructs_df, num_inserts, insert_locations, construct_tubes, construct_names,
         insert_plate_map, vol_per_insert_dict, bin_dict
@@ -141,15 +153,55 @@ def display_confirmation_window(
     # Tube placements info
     global tube_placements
     tube_placements = ""
+
+    # --- Identify all toolkit plates and assign deck slots ---
+    toolkit_plate_slots = {}
+    # Use the same available slots as the rest of the script (for tip racks and toolkit plates)
+    available_slots = ["1", "2", "3", "5", "6", "9"]
+
+    # Calculate number of tips needed as in template.py
+    num_master_mix_transfers = len(construct_tubes)
+    num_insert_transfers = sum(len(construct) for construct in constructs)
+    total_p20_tips = num_insert_transfers + num_master_mix_transfers  # assuming all MM and inserts use p20
+    total_p300_tips = 0  # not used if all volumes < 20
+
+    num_p20_racks = (total_p20_tips - 1) // 96 + 1 if total_p20_tips > 0 else 0
+    num_p300_racks = (total_p300_tips - 1) // 96 + 1 if total_p300_tips > 0 else 0
+
+    p20_slots = available_slots[:num_p20_racks]
+    p300_slots = available_slots[num_p20_racks:num_p20_racks+num_p300_racks]
+    toolkit_slots = available_slots[num_p20_racks+num_p300_racks:]
+
+    used_toolkits = set()
     for insert, (plate, well) in insert_plate_map.items():
-        if plate == "myt_plate":
+        if plate not in ("tube_rack", "temp_module", "myt_plate"):
+            used_toolkits.add(plate)
+    for idx, toolkit in enumerate(sorted(used_toolkits)):
+        if idx < len(toolkit_slots):
+            toolkit_plate_slots[toolkit] = toolkit_slots[idx]
+        else:
+            toolkit_plate_slots[toolkit] = "extra"
+
+    # --- Build tube placements string with plate and slot info ---
+    for insert, (plate, well) in insert_plate_map.items():
+        if plate in toolkit_plate_slots:
+            slot = toolkit_plate_slots[plate]
+            tube_placements += f"[{well}] ({plate} Plate, Slot {slot}): {insert}, \n"
+        elif plate == "myt_plate":
             tube_placements += f"[{well}] (MYT Plate): {insert}, \n"
         else:
             tube_placements += f"[{well}] (Temp Module): {insert}, \n"
+
     tube_placements += f"\n[{master_mix}] (Temp Module): Master Mix,"
     tube_placements += f"\n[{water_loc}] (Temp Module): Molecular Grade Water, \n"
     tube_placements += "\nConstructs will be built in the thermocycler module:\n\n"
     tube_placements += "\n".join([f"[{location}]: {construct_names[i]}, " for i, location in enumerate(construct_tubes)])
+
+    # Add plate/slot summary for user clarity
+    if used_toolkits:
+        tube_placements += "\n\nToolkit plate locations on deck:\n"
+        for toolkit, slot in toolkit_plate_slots.items():
+            tube_placements += f"  {toolkit} Plate: Slot {slot}\n"
 
     # Confirmation message
     confirmation_message = (
@@ -376,10 +428,14 @@ def generate_script(
         water_vol = reaction_vol - (mm_per_reaction + total_insert_vol)
         water_per_reaction.append(round(water_vol, 2))  # Round to 2
 
+    # Calculate number of tips needed as in template.py
     num_master_mix_transfers = len(construct_tubes)
     num_insert_transfers = sum(len(construct) for construct in constructs)
     total_p20_tips = num_insert_transfers + num_master_mix_transfers  # assuming all MM and inserts use p20
     total_p300_tips = 0  # not used if all volumes < 20
+
+    num_p20_racks = (total_p20_tips - 1) // 96 + 1 if total_p20_tips > 0 else 0
+    num_p300_racks = (total_p300_tips - 1) // 96 + 1 if total_p300_tips > 0 else 0
 
     script = template.format(
         tube_placements=tube_placements,
@@ -412,9 +468,9 @@ path_constructs = ""
 
 # Create the main window
 root = tk.Tk()
-root.title("Assembly - Select Benchling Files")
+root.title("Golden Gate Assembly - Select Benchling Files")
 root.configure(padx=20, pady=20)  # Add horizontal (and vertical) padding
-root.geometry("400x220")  # Set a default size
+root.geometry("500x220")  # Set a default size
 
 # Add a variable to track the checkbox state
 use_myt_var = tk.BooleanVar(value=False)
@@ -426,10 +482,10 @@ def on_myt_checkbox():
         handle_myt_toolkit_unselected()
 
 def handle_myt_toolkit_selected():
-    print("Multiplex Yeast Toolkit option selected.")
+    print("Toolkit option selected.")
 
 def handle_myt_toolkit_unselected():
-    print("Multiplex Yeast Toolkit option unselected.")
+    print("Toolkit option unselected.")
 
 # --- Add file selection buttons ---
 def check_accept_ready():
@@ -458,7 +514,7 @@ select_button_1.pack(pady=5)
 select_button_2 = tk.Button(root, text="Select Constructs CSV", command=select_file_2)
 select_button_2.pack(pady=5)
 
-myt_checkbox = tk.Checkbutton(root, text="Use Multiplex Yeast Toolkit (MYT)", variable=use_myt_var, command=on_myt_checkbox)
+myt_checkbox = tk.Checkbutton(root, text="Pull fragments from toolkit plates (MYT, YTK, YSD)", variable=use_myt_var, command=on_myt_checkbox)
 myt_checkbox.pack(pady=5)
 
 accept_button = tk.Button(root, text="Confirm", command=accept_files, state="disabled")
