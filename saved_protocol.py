@@ -1,42 +1,42 @@
 import opentrons.execute # type: ignore
 from opentrons import protocol_api # type: ignore
-metadata = {"apiLevel": "2.22", "description": '''[D9] (MYT Plate, Slot 2): pMYT045_nan_34_Assembly_Cassette, 
-[A5] (MYT Plate, Slot 2): pMYT005_2_pLacFEC, 
-[A1] (Temp Module): sgrna-rfp_3_a6+r2+r14_No-self-A, 
-[A2] (Temp Module): sgrna-rfp_3_a6+r2+a16_No-other-R, 
-[A3] (Temp Module): sgrna-rfp_3_a6+r2_No-fb, 
-[A4] (Temp Module): sgrna-rfp_3_a6_Rep-only, 
-[E8] (YTK Plate, Slot 3): pYTK056_4_tTDH1, 
+metadata = {"apiLevel": "2.22", "description": '''[A1] (Temp Module): pYTK001_entry vector_Part_Plasmid_Entry_Vector, 
+[A2] (Temp Module): MdABF1_XP_008373134.1_L0, 
+[A3] (Temp Module): MdABF1_XP_028950080.1_L0, 
+[A4] (Temp Module): MdABI1_XP_008337741.1_L0, 
+[A5] (Temp Module): MDABI1_XP_008338708.1_L0, 
+[A6] (Temp Module): MdABI5_XP_028946642.1_L0, 
+[B1] (Temp Module): MdOST1_NP_001315653.1_L0, 
+[B2] (Temp Module): MdOST1_NP_001315655.1_L0, 
+[B3] (Temp Module): rminiAID_2ADual_TWIST, 
 
-[A5] (Temp Module): Master Mix,
-[A6] (Temp Module): Molecular Grade Water, 
+[B4] (Temp Module): Master Mix,
+[B5] (Temp Module): Molecular Grade Water, 
 
 Constructs will be built in the thermocycler module:
 
-[A1]: pMYT045_nan_34_Assembly_Cassette-pMYT005_2_pLacFEC-sgrna-rfp_3_a6+r2+r14_No-self-A-pYTK056_4_tTDH1, 
-[A2]: pMYT045_nan_34_Assembly_Cassette-pMYT005_2_pLacFEC-sgrna-rfp_3_a6+r2+a16_No-other-R-pYTK056_4_tTDH1, 
-[A3]: pMYT045_nan_34_Assembly_Cassette-pMYT005_2_pLacFEC-sgrna-rfp_3_a6+r2_No-fb-pYTK056_4_tTDH1, 
-[A4]: pMYT045_nan_34_Assembly_Cassette-pMYT005_2_pLacFEC-sgrna-rfp_3_a6_Rep-only-pYTK056_4_tTDH1, 
-
-Toolkit plate locations on deck:
-  MYT Plate: Slot 2
-  YTK Plate: Slot 3
-'''}
+[A1]: pYTK001_entry vector_Part_Plasmid_Entry_Vector-MdABF1_XP_008373134.1_L0-rminiAID_2ADual_TWIST, 
+[A2]: pYTK001_entry vector_Part_Plasmid_Entry_Vector-MdABF1_XP_028950080.1_L0-rminiAID_2ADual_TWIST, 
+[A3]: pYTK001_entry vector_Part_Plasmid_Entry_Vector-MdABI1_XP_008337741.1_L0-rminiAID_2ADual_TWIST, 
+[A4]: pYTK001_entry vector_Part_Plasmid_Entry_Vector-MDABI1_XP_008338708.1_L0-rminiAID_2ADual_TWIST, 
+[A5]: pYTK001_entry vector_Part_Plasmid_Entry_Vector-MdABI5_XP_028946642.1_L0-rminiAID_2ADual_TWIST, 
+[A6]: pYTK001_entry vector_Part_Plasmid_Entry_Vector-MdOST1_NP_001315653.1_L0-rminiAID_2ADual_TWIST, 
+[A7]: pYTK001_entry vector_Part_Plasmid_Entry_Vector-MdOST1_NP_001315655.1_L0-rminiAID_2ADual_TWIST, '''}
 
 # Fragments and constructs
-inserts = {'pMYT045_nan_34_Assembly_Cassette': ('MYT', 'D9'), 'pMYT005_2_pLacFEC': ('MYT', 'A5'), 'sgrna-rfp_3_a6+r2+r14_No-self-A': ('tube_rack', 'A1'), 'sgrna-rfp_3_a6+r2+a16_No-other-R': ('tube_rack', 'A2'), 'sgrna-rfp_3_a6+r2_No-fb': ('tube_rack', 'A3'), 'sgrna-rfp_3_a6_Rep-only': ('tube_rack', 'A4'), 'pYTK056_4_tTDH1': ('YTK', 'E8')} # type: ignore
-constructs = [['pMYT045_nan_34_Assembly_Cassette', 'pMYT005_2_pLacFEC', 'sgrna-rfp_3_a6+r2+r14_No-self-A', 'pYTK056_4_tTDH1'], ['pMYT045_nan_34_Assembly_Cassette', 'pMYT005_2_pLacFEC', 'sgrna-rfp_3_a6+r2+a16_No-other-R', 'pYTK056_4_tTDH1'], ['pMYT045_nan_34_Assembly_Cassette', 'pMYT005_2_pLacFEC', 'sgrna-rfp_3_a6+r2_No-fb', 'pYTK056_4_tTDH1'], ['pMYT045_nan_34_Assembly_Cassette', 'pMYT005_2_pLacFEC', 'sgrna-rfp_3_a6_Rep-only', 'pYTK056_4_tTDH1']] # type: ignore
+inserts = {'pYTK001_entry vector_Part_Plasmid_Entry_Vector': ('tube_rack', 'A1'), 'MdABF1_XP_008373134.1_L0': ('tube_rack', 'A2'), 'MdABF1_XP_028950080.1_L0': ('tube_rack', 'A3'), 'MdABI1_XP_008337741.1_L0': ('tube_rack', 'A4'), 'MDABI1_XP_008338708.1_L0': ('tube_rack', 'A5'), 'MdABI5_XP_028946642.1_L0': ('tube_rack', 'A6'), 'MdOST1_NP_001315653.1_L0': ('tube_rack', 'B1'), 'MdOST1_NP_001315655.1_L0': ('tube_rack', 'B2'), 'rminiAID_2ADual_TWIST': ('tube_rack', 'B3')} # type: ignore
+constructs = [['pYTK001_entry vector_Part_Plasmid_Entry_Vector', 'MdABF1_XP_008373134.1_L0', 'rminiAID_2ADual_TWIST'], ['pYTK001_entry vector_Part_Plasmid_Entry_Vector', 'MdABF1_XP_028950080.1_L0', 'rminiAID_2ADual_TWIST'], ['pYTK001_entry vector_Part_Plasmid_Entry_Vector', 'MdABI1_XP_008337741.1_L0', 'rminiAID_2ADual_TWIST'], ['pYTK001_entry vector_Part_Plasmid_Entry_Vector', 'MDABI1_XP_008338708.1_L0', 'rminiAID_2ADual_TWIST'], ['pYTK001_entry vector_Part_Plasmid_Entry_Vector', 'MdABI5_XP_028946642.1_L0', 'rminiAID_2ADual_TWIST'], ['pYTK001_entry vector_Part_Plasmid_Entry_Vector', 'MdOST1_NP_001315653.1_L0', 'rminiAID_2ADual_TWIST'], ['pYTK001_entry vector_Part_Plasmid_Entry_Vector', 'MdOST1_NP_001315655.1_L0', 'rminiAID_2ADual_TWIST']] # type: ignore
 
 # Tube rack locations of reagents
-master_mix = f'A5' # type: ignore
-reagent_tubes = [master_mix] + list(inserts.values())
+master_mix = f'B4' # type: ignore
+water_loc = f'B5'  # type: ignore
 
 # Construct Tube Locations
-construct_tubes = ['A1', 'A2', 'A3', 'A4'] # type: ignore
+construct_tubes = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'] # type: ignore
 
 # Define volumes, in uL
-vol_master_mix_per_reaction = [6.0, 6.0, 6.0, 6.0] # type: ignore
-vol_per_insert_dict = {'pMYT045_nan_34_Assembly_Cassette': 1.0, 'pMYT005_2_pLacFEC': 1.0, 'sgrna-rfp_3_a6+r2+r14_No-self-A': 1.0, 'sgrna-rfp_3_a6+r2+a16_No-other-R': 1.0, 'sgrna-rfp_3_a6+r2_No-fb': 1.0, 'sgrna-rfp_3_a6_Rep-only': 1.0, 'pYTK056_4_tTDH1': 1.0} # type: ignore
+vol_master_mix_per_reaction = [6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0] # type: ignore
+vol_per_insert_dict = {'pYTK001_entry vector_Part_Plasmid_Entry_Vector': 1.0, 'MdABF1_XP_008373134.1_L0': 1.0, 'MdABF1_XP_028950080.1_L0': 1.0, 'MdABI1_XP_008337741.1_L0': 1.0, 'MDABI1_XP_008338708.1_L0': 1.0, 'MdABI5_XP_028946642.1_L0': 1.0, 'MdOST1_NP_001315653.1_L0': 1.0, 'MdOST1_NP_001315655.1_L0': 1.0, 'rminiAID_2ADual_TWIST': 1.0} # type: ignore
 
 # Thermocycler settings
 reaction_temp = 37 # type: ignore
@@ -44,6 +44,9 @@ ligation_temp = 16.0 # type: ignore
 inactivation_temp = 65 # type: ignore
 reaction_vol = 15.0 # type: ignore
 num_cycles = 25 # type: ignore
+
+# Water location in temp module, passed from script generator
+
 
 def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK & TIPRACK LOADING ---
@@ -109,12 +112,13 @@ def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK ---
     if (total_p20_tips + total_p300_tips) > 480:
         raise Exception(
-            f"Not enough tips: Need 20 x 20uL tips and 0 x 300uL tips, "
+            f"Not enough tips: Need 28 x 20uL tips and 0 x 300uL tips, "
             "but only 5 racks are loaded. Please reduce the number of reactions."
         )
 
     # Initialize thermocycler
     tc_mod.open_lid()
+    protocol.set_rail_lights(True)
 
     # Pipette transfer function to handle both pipettes
     def pipette_transfer(vol, source, dest, pipette=None):
@@ -133,7 +137,7 @@ def run(protocol: protocol_api.ProtocolContext):
             protocol.delay(seconds=0.3)
             protocol.set_rail_lights(True)
             protocol.delay(seconds=0.3)
-        protocol.set_rail_lights(True)
+        protocol.set_rail_lights(False)
         protocol.pause(message)
 
     # Distribute master mix to tubes using multi-dispense (one tip per batch)
@@ -176,7 +180,7 @@ def run(protocol: protocol_api.ProtocolContext):
     if wells_needing_water:
         p20.pick_up_tip()
         for vol, dest in zip(water_vols, wells_needing_water):
-            p20.transfer(vol, temp_tubes['A2'], dest, new_tip='never')
+            p20.transfer(vol, temp_tubes[water_loc], dest, new_tip='never')
         p20.drop_tip()
 
     # Now distribute master mix to each well
@@ -237,13 +241,13 @@ def run(protocol: protocol_api.ProtocolContext):
         tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=90, block_max_volume=reaction_vol) # 1.5 min
         tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
     tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=1200, block_max_volume=reaction_vol) # 20 min
-    tc_mod.set_block_temperature(temperature=50, hold_time_seconds=300, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=inactivation_temp, hold_time_seconds=600, block_max_volume=reaction_vol) # 10 min
     tc_mod.set_block_temperature(temperature=4, hold_time_seconds=60) # 1 min
     tc_mod.deactivate_lid() # Deactivate lid to allow for pipetting
     protocol.delay(seconds=5) # Wait for lid to cool down
 
     pause("Thermocycler protocol complete, holding at 4 Celsius. Press continue to open thermocycler lid.")
+    protocol.set_rail_lights(True)
     tc_mod.open_lid() # Open lid for pipetting
 
 def custom_mix(pipette, well, mixreps=3, vol=20, z_asp=1, z_disp_source_mix=8, z_disp_destination=8):
