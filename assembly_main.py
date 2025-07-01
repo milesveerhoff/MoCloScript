@@ -310,46 +310,6 @@ def display_confirmation_window(
     )
     mm_info_label.pack(pady=(10, 10), fill="x", anchor="w")
 
-    # --- Thermocycler settings section (REMOVE THIS LEGACY BLOCK) ---
-    # tc_settings_frame = tk.Frame(scrollable_frame)
-    # tc_settings_frame.pack(fill="x", pady=(10, 10), anchor="w")
-    # tc_settings_label = tk.Label(
-    #     tc_settings_frame,
-    #     text="Enter settings for thermocycler protocol:",
-    #     anchor="w",
-    #     justify="left",
-    #     pady=2
-    # )
-    # tc_settings_label.pack(side="top", anchor="w", fill="x", pady=(0, 8))
-    # digestion_frame = tk.Frame(tc_settings_frame)
-    # digestion_frame.pack(fill="x", pady=2, anchor="w")
-    # tc_temp_label = tk.Label(digestion_frame, text="Digestion Temp (°C):", anchor="w", justify="left", width=40)
-    # tc_temp_label.pack(side="left", padx=(0, 5))
-    # tc_temp_activation = tk.Entry(digestion_frame, width=10, justify="left")
-    # tc_temp_activation.insert(0, "37")
-    # tc_temp_activation.pack(side="left", padx=(0, 5))
-    # ligation_frame = tk.Frame(tc_settings_frame)
-    # ligation_frame.pack(fill="x", pady=2, anchor="w")
-    # tc_temp_label_lig = tk.Label(ligation_frame, text="Ligation Temp (°C):", anchor="w", justify="left", width=40)
-    # tc_temp_label_lig.pack(side="left", padx=(0, 5))
-    # tc_temp_ligation = tk.Entry(ligation_frame, width=10, justify="left")
-    # tc_temp_ligation.insert(0, "16")
-    # tc_temp_ligation.pack(side="left", padx=(0, 5))
-    # inact_frame = tk.Frame(tc_settings_frame)
-    # inact_frame.pack(fill="x", pady=2, anchor="w")
-    # tc_temp_label2 = tk.Label(inact_frame, text="Final Inactivation Temp (°C):", anchor="w", justify="left", width=40)
-    # tc_temp_label2.pack(side="left", padx=(0, 5))
-    # tc_temp_inactivation = tk.Entry(inact_frame, width=10, justify="left")
-    # tc_temp_inactivation.insert(0, "65")
-    # tc_temp_inactivation.pack(side="left", padx=(0, 5))
-    # cycles_frame = tk.Frame(tc_settings_frame)
-    # cycles_frame.pack(fill="x", pady=2, anchor="w")
-    # cycles_label = tk.Label(cycles_frame, text="Number of cycles (for digestion/ligation):", anchor="w", justify="left", width=40)
-    # cycles_label.pack(side="left", padx=(0, 5))
-    # cycles_entry = tk.Entry(cycles_frame, width=10, justify="left")
-    # cycles_entry.insert(0, "25")
-    # cycles_entry.pack(side="left", padx=(0, 5))
-
     # --- Detailed Thermocycler Steps Section (KEEP THIS) ---
     tc_steps_frame = tk.Frame(scrollable_frame)
     tc_steps_frame.pack(fill="x", pady=(10, 10), anchor="w")
@@ -477,14 +437,6 @@ def generate_script(
         mm_per_reaction = float(mm_per_reaction_entry.get())
     except Exception:
         mm_per_reaction = 6.0  # Default to 6 µL
-    try:
-        ligation_temp = float(tc_temp_ligation.get())
-    except Exception:
-        ligation_temp = 16.0  # Default to 16 °C
-    try:
-        num_cycles = int(cycles_entry.get())
-    except Exception:
-        num_cycles = 25  # Default to 25 cycles
 
     # Use per-insert volumes for each construct
     vol_per_insert_dict = {}
@@ -518,15 +470,11 @@ def generate_script(
         mm_per_reaction=mm_per_reaction,
         vol_per_insert=vol_per_insert_dict,
         water_per_reaction=water_per_reaction,
-        reaction_temp=tc_temp_activation.get(),
-        ligation_temp=ligation_temp,
-        inactivation_temp=tc_temp_inactivation.get(),
         constructs=constructs,
         total_p20_tips=total_p20_tips,
         total_p300_tips=total_p300_tips,
         reaction_vol=reaction_vol,
         vol_master_mix_per_reaction=[mm_per_reaction] * len(constructs),
-        num_cycles=num_cycles,
         water_loc=water_loc,
         tc_step1_temp=tc_step_entries['step1_temp'].get(),
         tc_step1_time=tc_step_entries['step1_time'].get(),

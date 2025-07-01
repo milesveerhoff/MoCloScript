@@ -16,13 +16,7 @@ construct_tubes = {construct_tubes} # type: ignore
 # Define volumes, in uL
 vol_master_mix_per_reaction = {vol_master_mix_per_reaction} # type: ignore
 vol_per_insert_dict = {vol_per_insert} # type: ignore
-
-# Thermocycler settings
-reaction_temp = {reaction_temp} # type: ignore
-ligation_temp = {ligation_temp} # type: ignore
-inactivation_temp = {inactivation_temp} # type: ignore
 reaction_vol = {reaction_vol} # type: ignore
-num_cycles = {num_cycles} # type: ignore
 
 # Water location in temp module, passed from script generator
 tc_step1_temp = {tc_step1_temp} # type: ignore
@@ -228,21 +222,6 @@ def run(protocol: protocol_api.ProtocolContext):
     7. inactivation_temp, 10min
     8. 4C, 1 min, pause to open lid
     '''    
-    tc_mod.set_lid_temperature(temperature=(inactivation_temp + 10))
-    tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=900, block_max_volume=reaction_vol) # 15 min
-    for i in range(num_cycles):
-        tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=90, block_max_volume=reaction_vol) # 1.5 min
-        tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
-    tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=1200, block_max_volume=reaction_vol) # 20 min
-    tc_mod.set_block_temperature(temperature=50, hold_time_seconds=300, block_max_volume=reaction_vol) # 10 min
-    tc_mod.set_block_temperature(temperature=inactivation_temp, hold_time_seconds=600, block_max_volume=reaction_vol) # 10 min
-    tc_mod.set_block_temperature(temperature=4, hold_time_seconds=60) # 1 min
-    tc_mod.deactivate_lid() # Deactivate lid to allow for pipetting
-    protocol.delay(seconds=5) # Wait for lid to cool down
-
-    pause("Thermocycler protocol complete, holding at 4 Celsius. Press continue to open thermocycler lid.")
-    protocol.set_rail_lights(True)
-    tc_mod.open_lid() # Open lid for pipetting
 
     # --- THERMOCYCLER PROTOCOL (use new variables) ---
     tc_mod.close_lid()
