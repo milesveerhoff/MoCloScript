@@ -9,6 +9,7 @@ constructs = {constructs} # type: ignore
 # Tube rack locations of reagents
 master_mix = f'{master_mix}' # type: ignore
 water_loc = f'{water_loc}'  # type: ignore
+enzyme_loc = f'{enzyme_loc}'  # type: ignore
 
 # Construct Tube Locations
 construct_tubes = {construct_tubes} # type: ignore
@@ -17,6 +18,7 @@ construct_tubes = {construct_tubes} # type: ignore
 vol_master_mix_per_reaction = {vol_master_mix_per_reaction} # type: ignore
 vol_per_insert_dict = {vol_per_insert} # type: ignore
 reaction_vol = {reaction_vol} # type: ignore
+enzyme_per_reaction = {enzyme_per_reaction} # type: ignore
 
 # Water location in temp module, passed from script generator
 tc_step1_temp = {tc_step1_temp} # type: ignore
@@ -176,12 +178,19 @@ def run(protocol: protocol_api.ProtocolContext):
     if wells_p300:
         distribute_master_mix(vols_p300, mm_source, wells_p300, p300)
 
+    # --- Distribute enzyme to each well (same as master mix, always use p20) ---
+    enzyme_source = temp_tubes[enzyme_loc]
+    for idx, well in enumerate(construct_tubes):
+        p20.pick_up_tip()
+        p20.transfer(float(enzyme_per_reaction), enzyme_source, tc_plate[well], new_tip='never')
+        p20.drop_tip()
+
     # Now add inserts to each well
     for index, construct_tube in enumerate(construct_tubes):
         construct_inserts = constructs[index]
         for i, insert in enumerate(construct_inserts):
             insert_location = inserts[insert]
-            insert_vol = vol_per_insert_dict.get(insert, 5)  # Default to 5 if not found
+            insert_vol = vol_per_insert_dict.get(insert, 1)  # Default to 1 if not found
             p20.pick_up_tip()
             # Decide which plate to use for each insert
             if isinstance(insert_location, tuple) or isinstance(insert_location, list):

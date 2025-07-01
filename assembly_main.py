@@ -31,7 +31,7 @@ def accept_files():
     load_data_and_display_confirmation()
 
 def load_data_and_display_confirmation():
-    global constructs_df, num_inserts, insert_locations, master_mix, construct_tubes, constructs, vol_per_insert_dict, toolkit_plate_wells, water_loc
+    global constructs_df, num_inserts, insert_locations, master_mix, construct_tubes, constructs, vol_per_insert_dict, toolkit_plate_wells, water_loc, enzyme_loc
 
     # Load volume data from CSV files
     fragments = pd.read_csv(path_fragments)
@@ -97,6 +97,7 @@ def load_data_and_display_confirmation():
     remaining_locations = locations[non_toolkit_idx:]
     master_mix = remaining_locations[0]  # Use first remaining location for MM
     water_loc = remaining_locations[1]
+    enzyme_loc = remaining_locations[2]  # Assign next available for enzyme
 
     # Assign locations in thermocycler to constructs
     construct_tubes = [f"{chr(65 + i // 12)}{i % 12 + 1}" for i in range(len(constructs_df))]
@@ -121,14 +122,14 @@ def load_data_and_display_confirmation():
     # Display the confirmation window, passing MM info and toolkit info
     display_confirmation_window(
         constructs_df, num_inserts, insert_locations, construct_tubes, construct_names,
-        insert_plate_map, vol_per_insert_dict, bin_dict
+        insert_plate_map, vol_per_insert_dict, bin_dict, enzyme_loc
     )
 
 def display_confirmation_window(
     constructs_df, num_inserts, insert_locations, construct_tubes, construct_names,
-    insert_plate_map, vol_per_insert_dict, bin_dict
+    insert_plate_map, vol_per_insert_dict, bin_dict, enzyme_loc
 ):
-    global confirmation_window, file_name_entry, excess_entry
+    global confirmation_window, file_name_entry
     confirmation_window = tk.Tk()
     confirmation_window.title("Confirm Settings")
     confirmation_window.configure(padx=20, pady=20)
@@ -193,7 +194,8 @@ def display_confirmation_window(
             tube_placements += f"[{well}] (Temp Module): {insert}, \n"
 
     tube_placements += f"\n[{master_mix}] (Temp Module): Master Mix,"
-    tube_placements += f"\n[{water_loc}] (Temp Module): Molecular Grade Water, \n"
+    tube_placements += f"\n[{water_loc}] (Temp Module): Molecular Grade Water,"
+    tube_placements += f"\n[{enzyme_loc}] (Temp Module): Enzyme, \n"
     tube_placements += "\nConstructs will be built in the thermocycler module:\n\n"
     tube_placements += "\n".join([f"[{location}]: {construct_names[i]}, " for i, location in enumerate(construct_tubes)])
 
@@ -241,37 +243,39 @@ def display_confirmation_window(
     # --- Master mix per reaction input section (SECOND) ---
     mm_per_reaction_frame = tk.Frame(scrollable_frame)
     mm_per_reaction_frame.pack(fill="x", pady=2, anchor="w")
-    mm_per_reaction_label = tk.Label(mm_per_reaction_frame, text="Master Mix volume per reaction (µL):", anchor="w", justify="left", width=40)
+    mm_per_reaction_label = tk.Label(mm_per_reaction_frame, text="Master Mix/Buffer per reaction (µL):", anchor="w", justify="left", width=40)
     mm_per_reaction_label.pack(side="left", padx=(0, 5))
     mm_per_reaction_entry = tk.Entry(mm_per_reaction_frame, width=10, justify="left")
-    mm_per_reaction_entry.insert(0, "6")
+    mm_per_reaction_entry.insert(0, "5")  # Default to 5 µL
     mm_per_reaction_entry.pack(side="left", padx=(0, 5))
+
+    # --- Enzyme per reaction input section (NEW, after master mix) ---
+    enzyme_per_reaction_frame = tk.Frame(scrollable_frame)
+    enzyme_per_reaction_frame.pack(fill="x", pady=2, anchor="w")
+    enzyme_per_reaction_label = tk.Label(
+        enzyme_per_reaction_frame,
+        text="Enzyme per reaction (µL):",
+        anchor="w",
+        justify="left",
+        width=40
+    )
+    enzyme_per_reaction_label.pack(side="left", padx=(0, 5))
+    enzyme_per_reaction_entry = tk.Entry(enzyme_per_reaction_frame, width=10, justify="left")
+    enzyme_per_reaction_entry.insert(0, "1")
+    enzyme_per_reaction_entry.pack(side="left", padx=(0, 5))
 
     # Input box for total reaction volume
     reaction_vol_frame = tk.Frame(scrollable_frame)
     reaction_vol_frame.pack(fill="x", pady=2, anchor="w")
-    reaction_vol_label = tk.Label(reaction_vol_frame, text="Total reaction volume per construct (µL):", anchor="w", justify="left", width=40)
+    reaction_vol_label = tk.Label(reaction_vol_frame, text="Reaction volume (µL):", anchor="w", justify="left", width=40)
     reaction_vol_label.pack(side="left", padx=(0, 5))
     reaction_vol_entry = tk.Entry(reaction_vol_frame, width=10, justify="left")
     reaction_vol_entry.insert(0, "15")
     reaction_vol_entry.pack(side="left", padx=(0, 5))
 
-    # --- Excess percentage input and live update ---
-    excess_frame = tk.Frame(scrollable_frame)
-    excess_frame.pack(fill="x", pady=2, anchor="w")
-    excess_label = tk.Label(excess_frame, text="Excess percentage for master mix (e.g., 5 for 5%):", anchor="w", justify="left", width=40)
-    excess_label.pack(side="left", padx=(0, 5))
-    excess_entry = tk.Entry(excess_frame, width=10, justify="left")
-    excess_entry.insert(0, "0")
-    excess_entry.pack(side="left", padx=(0, 5))
-
     # Info label for water and master mix, to be updated live
     mm_info_var = tk.StringVar()
     def update_mm_info(*args):
-        try:
-            excess_percent = float(excess_entry.get())
-        except Exception:
-            excess_percent = 0.0
         try:
             reaction_vol = float(reaction_vol_entry.get())
         except Exception:
@@ -287,13 +291,11 @@ def display_confirmation_window(
             water_vol = reaction_vol - (mm_per_reaction + total_insert_vol)
             water_per_reaction.append(round(water_vol,2))
         total_mm = mm_per_reaction * n_reactions
-        total_mm_with_excess = int(total_mm * (1 + excess_percent / 100) + 0.5)
         mm_info_var.set(
-            f"Total master mix (with {excess_percent:.1f}% excess): {total_mm_with_excess} uL\n"
+            f"Total master mix needed: {total_mm} uL\n"
             f"Water per reaction (should all be positive): {water_per_reaction} uL\n"
             f"Total water needed: {round(sum(water_per_reaction),2)} uL"
         )
-    excess_entry.bind("<KeyRelease>", update_mm_info)
     reaction_vol_entry.bind("<KeyRelease>", update_mm_info)
     mm_per_reaction_entry.bind("<KeyRelease>", update_mm_info)
     for entry in insert_volume_entries.values():
@@ -428,8 +430,8 @@ def display_confirmation_window(
         text="Confirm",
         anchor="w",
         command=lambda: generate_script(
-            file_name_entry, excess_entry, reaction_vol_entry, insert_volume_entries,
-            mm_per_reaction_entry, tc_step_entries
+            file_name_entry, reaction_vol_entry, insert_volume_entries,
+            mm_per_reaction_entry, enzyme_per_reaction_entry, tc_step_entries, enzyme_loc
         )
     )
     confirm_button.pack(pady=(20, 10), anchor="w")
@@ -469,14 +471,10 @@ def display_confirmation_window(
     update_runtime()
 
 def generate_script(
-    file_name_entry, excess_entry, reaction_vol_entry, insert_volume_entries,
-    mm_per_reaction_entry, tc_step_entries
+    file_name_entry, reaction_vol_entry, insert_volume_entries,
+    mm_per_reaction_entry, enzyme_per_reaction_entry, tc_step_entries, enzyme_loc
 ):
     file_name = file_name_entry.get()
-    try:
-        excess_percent = float(excess_entry.get())
-    except Exception:
-        excess_percent = 0.0  # Default to 0% excess
     try:
         reaction_vol = float(reaction_vol_entry.get())
     except Exception:
@@ -516,6 +514,8 @@ def generate_script(
         master_mix=master_mix,
         construct_tubes=construct_tubes,
         mm_per_reaction=mm_per_reaction,
+        enzyme_per_reaction=enzyme_per_reaction_entry.get(),
+        enzyme_loc=enzyme_loc,
         vol_per_insert=vol_per_insert_dict,
         water_per_reaction=water_per_reaction,
         constructs=constructs,
