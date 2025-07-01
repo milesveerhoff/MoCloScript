@@ -404,9 +404,23 @@ def display_confirmation_window(
         justify="left"
     )
     file_name_label.pack(side="top", anchor="w", fill="x", pady=(0, 2))
-    file_name_entry = tk.Entry(file_name_frame, width=30, justify="left")
+
+    def browse_save_file():
+        path = filedialog.asksaveasfilename(
+            defaultextension=".py",
+            filetypes=[("Python files", "*.py"), ("All files", "*.*")]
+        )
+        if path:
+            file_name_entry.delete(0, tk.END)
+            file_name_entry.insert(0, path)
+
+    file_name_row = tk.Frame(file_name_frame)
+    file_name_row.pack(side="top", anchor="w", fill="x", pady=(0, 2))
+    file_name_entry = tk.Entry(file_name_row, width=40, justify="left")
     file_name_entry.insert(0, "saved_protocol.py")
-    file_name_entry.pack(side="top", anchor="w", padx=(0, 0), pady=(0, 2))
+    file_name_entry.pack(side="left", padx=(0, 5))
+    browse_button = tk.Button(file_name_row, text="Browse", command=browse_save_file)
+    browse_button.pack(side="left")
 
     # Confirm button to generate the script (extra space above)
     confirm_button = tk.Button(
@@ -419,6 +433,40 @@ def display_confirmation_window(
         )
     )
     confirm_button.pack(pady=(20, 10), anchor="w")
+
+    # --- Runtime estimation label ---
+    runtime_var = tk.StringVar()
+    runtime_label = tk.Label(
+        tc_steps_frame,
+        textvariable=runtime_var,
+        anchor="w",
+        justify="left",
+        fg="blue"
+    )
+    runtime_label.pack(side="top", anchor="w", pady=(8, 0))
+
+    def update_runtime(*args):
+        try:
+            t1 = int(tc_step_entries['step1_time'].get() or 0)
+            t2 = int(tc_step_entries['step2_time'].get() or 0)
+            t3 = int(tc_step_entries['step3_time'].get() or 0)
+            cycles = int(tc_step_entries['step4_cycles'].get() or 0)
+            t5 = int(tc_step_entries['step5_time'].get() or 0)
+            t6 = int(tc_step_entries['step6_time'].get() or 0)
+            t7 = int(tc_step_entries['step7_time'].get() or 0)
+            t8 = int(tc_step_entries['step8_time'].get() or 0)
+            total_seconds = t1 + cycles * (t2 + t3) + t5 + t6 + t7 + t8
+            hours = total_seconds // 3600
+            minutes = (total_seconds % 3600) // 60
+            seconds = total_seconds % 60
+            runtime_str = f"Estimated thermocycler runtime: {hours}h {minutes}m {seconds}s"
+        except Exception:
+            runtime_str = "Estimated thermocycler runtime: (invalid input)"
+        runtime_var.set(runtime_str)
+
+    for key in ['step1_time', 'step2_time', 'step3_time', 'step4_cycles', 'step5_time', 'step6_time', 'step7_time', 'step8_time']:
+        tc_step_entries[key].bind("<KeyRelease>", lambda e: update_runtime())
+    update_runtime()
 
 def generate_script(
     file_name_entry, excess_entry, reaction_vol_entry, insert_volume_entries,
