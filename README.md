@@ -35,7 +35,6 @@
    - **Fragments CSV:** List of DNA fragments, from the "Fragments" table in Benchling.
    - **Constructs CSV:** List of constructs, each row specifying the fragments to combine, from the "Constructs" table in Benchling.
    - Exported files will default to "table.csv" so rename or keep track of each file.
-   - **Toolkit CSV:** (Optional, for toolkit support) List of toolkit parts and their plate positions.
 
 2. **Launch the Application:**
    - Run `assembly_main.py` with Python 3 (requires `pandas` and `tkinter`).
