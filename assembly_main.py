@@ -223,7 +223,7 @@ def display_confirmation_window(
     # --- Per-insert volume input section (FIRST) ---
     tk.Label(
         scrollable_frame,
-        text="Volumes need to be manually calculated for 25/50 fmol of each fragment, should be between >1µL:",
+        text="Volumes need to be manually calculated for 25/50 fmol of each fragment, each should be >1µL:",
         anchor="w", justify="left"
     ).pack(pady=5, fill="x", anchor="w")
     insert_volume_entries = {}
@@ -310,54 +310,89 @@ def display_confirmation_window(
     )
     mm_info_label.pack(pady=(10, 10), fill="x", anchor="w")
 
-    # --- Thermocycler settings section (grouped, with consistent padding and style) ---
-    tc_settings_frame = tk.Frame(scrollable_frame)
-    tc_settings_frame.pack(fill="x", pady=(10, 10), anchor="w")
+    # --- Detailed Thermocycler Steps Section (KEEP THIS) ---
+    tc_steps_frame = tk.Frame(scrollable_frame)
+    tc_steps_frame.pack(fill="x", pady=(10, 10), anchor="w")
 
-    tc_settings_label = tk.Label(
-        tc_settings_frame,
-        text="Enter settings for thermocycler protocol:",
+    tc_steps_label = tk.Label(
+        tc_steps_frame,
+        text="Thermocycler Step Settings [Temperature in °C] [Time in seconds, enter 0 to skip]:",
         anchor="w",
         justify="left",
         pady=2
     )
-    tc_settings_label.pack(side="top", anchor="w", fill="x", pady=(0, 8))
+    tc_steps_label.pack(side="top", anchor="w", fill="x", pady=(0, 8))
 
-    # Digestion Temp
-    digestion_frame = tk.Frame(tc_settings_frame)
-    digestion_frame.pack(fill="x", pady=2, anchor="w")
-    tc_temp_label = tk.Label(digestion_frame, text="Digestion Temp (°C):", anchor="w", justify="left", width=40)
-    tc_temp_label.pack(side="left", padx=(0, 5))
-    tc_temp_activation = tk.Entry(digestion_frame, width=10, justify="left")
-    tc_temp_activation.insert(0, "37")
-    tc_temp_activation.pack(side="left", padx=(0, 5))
+    # Step entry widgets dictionary for later use
+    tc_step_entries = {}
 
-    # Ligation Temp
-    ligation_frame = tk.Frame(tc_settings_frame)
-    ligation_frame.pack(fill="x", pady=2, anchor="w")
-    tc_temp_label_lig = tk.Label(ligation_frame, text="Ligation Temp (°C):", anchor="w", justify="left", width=40)
-    tc_temp_label_lig.pack(side="left", padx=(0, 5))
-    tc_temp_ligation = tk.Entry(ligation_frame, width=10, justify="left")
-    tc_temp_ligation.insert(0, "16")
-    tc_temp_ligation.pack(side="left", padx=(0, 5))
+    def add_tc_step(frame, label_text, temp_default, time_default, temp_key, time_key):
+        step_frame = tk.Frame(tc_steps_frame)
+        step_frame.pack(fill="x", pady=2, anchor="w")
+        tk.Label(step_frame, text=label_text, width=38, anchor="w", justify="left").pack(side="left")
+        temp_entry = tk.Entry(step_frame, width=8, justify="right")
+        temp_entry.insert(0, temp_default)
+        temp_entry.pack(side="left", padx=(0, 5))
+        time_entry = tk.Entry(step_frame, width=8, justify="right")
+        time_entry.insert(0, time_default)
+        time_entry.pack(side="left", padx=(0, 5))
+        tc_step_entries[temp_key] = temp_entry
+        tc_step_entries[time_key] = time_entry
 
-    # Final Inactivation Temp
-    inact_frame = tk.Frame(tc_settings_frame)
-    inact_frame.pack(fill="x", pady=2, anchor="w")
-    tc_temp_label2 = tk.Label(inact_frame, text="Final Inactivation Temp (°C):", anchor="w", justify="left", width=40)
-    tc_temp_label2.pack(side="left", padx=(0, 5))
-    tc_temp_inactivation = tk.Entry(inact_frame, width=10, justify="left")
-    tc_temp_inactivation.insert(0, "65")
-    tc_temp_inactivation.pack(side="left", padx=(0, 5))
+    # Step 1: Digestion, 15 min
+    add_tc_step(tc_steps_frame, "Step 1: Initial Digestion", "37", "900", 'step1_temp', 'step1_time')
+    # Step 2: Digestion, 1.5 min
+    add_tc_step(tc_steps_frame, "Step 2: Digestion", "37", "90", 'step2_temp', 'step2_time')
+    # Step 3: Annealing & Ligation, 3 min
+    add_tc_step(tc_steps_frame, "Step 3: Annealing & Ligation", "16", "180", 'step3_temp', 'step3_time')
 
-    # Number of cycles
-    cycles_frame = tk.Frame(tc_settings_frame)
-    cycles_frame.pack(fill="x", pady=2, anchor="w")
-    cycles_label = tk.Label(cycles_frame, text="Number of cycles (for digestion/ligation):", anchor="w", justify="left", width=40)
-    cycles_label.pack(side="left", padx=(0, 5))
-    cycles_entry = tk.Entry(cycles_frame, width=10, justify="left")
-    cycles_entry.insert(0, "25")
-    cycles_entry.pack(side="left", padx=(0, 5))
+    # Step 4: Number of cycles (for Steps 2 & 3)
+    step4_frame = tk.Frame(tc_steps_frame)
+    step4_frame.pack(fill="x", pady=2, anchor="w")
+    tk.Label(step4_frame, text="Step 4: Cycles (Step 2-3)", width=38, anchor="w", justify="left").pack(side="left")
+    step4_cycles = tk.Entry(step4_frame, width=8, justify="right")
+    step4_cycles.insert(0, "25")
+    step4_cycles.pack(side="left", padx=(0, 5))
+    tc_step_entries['step4_cycles'] = step4_cycles
+
+    # Step 5: Ligation, 20 min
+    add_tc_step(tc_steps_frame, "Step 5: Final Ligation", "16", "1200", 'step5_temp', 'step5_time')
+    # Step 6: 50°C, 10 min
+    add_tc_step(tc_steps_frame, "Step 6: Digestion & Ligase Inact.", "50", "300", 'step6_temp', 'step6_time')
+    # Step 7: Inactivation, 10 min
+    add_tc_step(tc_steps_frame, "Step 7: Inactivation", "65", "600", 'step7_temp', 'step7_time')
+    # Step 8: 4°C, 1 min
+    add_tc_step(tc_steps_frame, "Step 8: Cool & Hold", "4", "60", 'step8_temp', 'step8_time')
+
+    # --- Synchronize temperature entries for steps 1+2 and 3+5 ---
+    def sync_step1_step2_temp(*args):
+        val = tc_step_entries['step1_temp'].get()
+        if tc_step_entries['step2_temp'].get() != val:
+            tc_step_entries['step2_temp'].delete(0, tk.END)
+            tc_step_entries['step2_temp'].insert(0, val)
+
+    def sync_step2_step1_temp(*args):
+        val = tc_step_entries['step2_temp'].get()
+        if tc_step_entries['step1_temp'].get() != val:
+            tc_step_entries['step1_temp'].delete(0, tk.END)
+            tc_step_entries['step1_temp'].insert(0, val)
+
+    def sync_step3_step5_temp(*args):
+        val = tc_step_entries['step3_temp'].get()
+        if tc_step_entries['step5_temp'].get() != val:
+            tc_step_entries['step5_temp'].delete(0, tk.END)
+            tc_step_entries['step5_temp'].insert(0, val)
+
+    def sync_step5_step3_temp(*args):
+        val = tc_step_entries['step5_temp'].get()
+        if tc_step_entries['step3_temp'].get() != val:
+            tc_step_entries['step3_temp'].delete(0, tk.END)
+            tc_step_entries['step3_temp'].insert(0, val)
+
+    tc_step_entries['step1_temp'].bind("<KeyRelease>", lambda e: sync_step1_step2_temp())
+    tc_step_entries['step2_temp'].bind("<KeyRelease>", lambda e: sync_step2_step1_temp())
+    tc_step_entries['step3_temp'].bind("<KeyRelease>", lambda e: sync_step3_step5_temp())
+    tc_step_entries['step5_temp'].bind("<KeyRelease>", lambda e: sync_step5_step3_temp())
 
     # --- File name section (grouped, with clear separation) ---
     file_name_frame = tk.Frame(scrollable_frame)
@@ -379,17 +414,15 @@ def display_confirmation_window(
         text="Confirm",
         anchor="w",
         command=lambda: generate_script(
-            file_name_entry, tc_temp_activation, tc_temp_inactivation,
-            excess_entry, reaction_vol_entry, insert_volume_entries, mm_per_reaction_entry,
-            tc_temp_ligation, cycles_entry
+            file_name_entry, excess_entry, reaction_vol_entry, insert_volume_entries,
+            mm_per_reaction_entry, tc_step_entries
         )
     )
     confirm_button.pack(pady=(20, 10), anchor="w")
 
 def generate_script(
-    file_name_entry, tc_temp_activation, tc_temp_inactivation, excess_entry,
-    reaction_vol_entry, insert_volume_entries, mm_per_reaction_entry,
-    tc_temp_ligation, cycles_entry
+    file_name_entry, excess_entry, reaction_vol_entry, insert_volume_entries,
+    mm_per_reaction_entry, tc_step_entries
 ):
     file_name = file_name_entry.get()
     try:
@@ -404,14 +437,6 @@ def generate_script(
         mm_per_reaction = float(mm_per_reaction_entry.get())
     except Exception:
         mm_per_reaction = 6.0  # Default to 6 µL
-    try:
-        ligation_temp = float(tc_temp_ligation.get())
-    except Exception:
-        ligation_temp = 16.0  # Default to 16 °C
-    try:
-        num_cycles = int(cycles_entry.get())
-    except Exception:
-        num_cycles = 25  # Default to 25 cycles
 
     # Use per-insert volumes for each construct
     vol_per_insert_dict = {}
@@ -445,15 +470,27 @@ def generate_script(
         mm_per_reaction=mm_per_reaction,
         vol_per_insert=vol_per_insert_dict,
         water_per_reaction=water_per_reaction,
-        reaction_temp=tc_temp_activation.get(),
-        ligation_temp=ligation_temp,
-        inactivation_temp=tc_temp_inactivation.get(),
         constructs=constructs,
         total_p20_tips=total_p20_tips,
         total_p300_tips=total_p300_tips,
         reaction_vol=reaction_vol,
         vol_master_mix_per_reaction=[mm_per_reaction] * len(constructs),
-        num_cycles=num_cycles
+        water_loc=water_loc,
+        tc_step1_temp=tc_step_entries['step1_temp'].get(),
+        tc_step1_time=tc_step_entries['step1_time'].get(),
+        tc_step2_temp=tc_step_entries['step2_temp'].get(),
+        tc_step2_time=tc_step_entries['step2_time'].get(),
+        tc_step3_temp=tc_step_entries['step3_temp'].get(),
+        tc_step3_time=tc_step_entries['step3_time'].get(),
+        tc_step4_cycles=tc_step_entries['step4_cycles'].get(),
+        tc_step5_temp=tc_step_entries['step5_temp'].get(),
+        tc_step5_time=tc_step_entries['step5_time'].get(),
+        tc_step6_temp=tc_step_entries['step6_temp'].get(),
+        tc_step6_time=tc_step_entries['step6_time'].get(),
+        tc_step7_temp=tc_step_entries['step7_temp'].get(),
+        tc_step7_time=tc_step_entries['step7_time'].get(),
+        tc_step8_temp=tc_step_entries['step8_temp'].get(),
+        tc_step8_time=tc_step_entries['step8_time'].get(),
     )
 
     with open(file_name, 'w') as file:

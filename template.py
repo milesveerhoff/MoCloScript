@@ -8,7 +8,7 @@ constructs = {constructs} # type: ignore
 
 # Tube rack locations of reagents
 master_mix = f'{master_mix}' # type: ignore
-reagent_tubes = [master_mix] + list(inserts.values())
+water_loc = f'{water_loc}'  # type: ignore
 
 # Construct Tube Locations
 construct_tubes = {construct_tubes} # type: ignore
@@ -16,13 +16,24 @@ construct_tubes = {construct_tubes} # type: ignore
 # Define volumes, in uL
 vol_master_mix_per_reaction = {vol_master_mix_per_reaction} # type: ignore
 vol_per_insert_dict = {vol_per_insert} # type: ignore
-
-# Thermocycler settings
-reaction_temp = {reaction_temp} # type: ignore
-ligation_temp = {ligation_temp} # type: ignore
-inactivation_temp = {inactivation_temp} # type: ignore
 reaction_vol = {reaction_vol} # type: ignore
-num_cycles = {num_cycles} # type: ignore
+
+# Water location in temp module, passed from script generator
+tc_step1_temp = {tc_step1_temp} # type: ignore
+tc_step1_time = {tc_step1_time} # type: ignore
+tc_step2_temp = {tc_step2_temp} # type: ignore
+tc_step2_time = {tc_step2_time} # type: ignore
+tc_step3_temp = {tc_step3_temp} # type: ignore
+tc_step3_time = {tc_step3_time} # type: ignore
+tc_step4_cycles = {tc_step4_cycles} # type: ignore
+tc_step5_temp = {tc_step5_temp} # type: ignore
+tc_step5_time = {tc_step5_time} # type: ignore
+tc_step6_temp = {tc_step6_temp} # type: ignore
+tc_step6_time = {tc_step6_time} # type: ignore
+tc_step7_temp = {tc_step7_temp} # type: ignore
+tc_step7_time = {tc_step7_time} # type: ignore
+tc_step8_temp = {tc_step8_temp} # type: ignore
+tc_step8_time = {tc_step8_time} # type: ignore
 
 def run(protocol: protocol_api.ProtocolContext):
     # --- TIP USAGE CHECK & TIPRACK LOADING ---
@@ -94,6 +105,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
     # Initialize thermocycler
     tc_mod.open_lid()
+    protocol.set_rail_lights(True)
 
     # Pipette transfer function to handle both pipettes
     def pipette_transfer(vol, source, dest, pipette=None):
@@ -112,7 +124,7 @@ def run(protocol: protocol_api.ProtocolContext):
             protocol.delay(seconds=0.3)
             protocol.set_rail_lights(True)
             protocol.delay(seconds=0.3)
-        protocol.set_rail_lights(True)
+        protocol.set_rail_lights(False)
         protocol.pause(message)
 
     # Distribute master mix to tubes using multi-dispense (one tip per batch)
@@ -155,7 +167,7 @@ def run(protocol: protocol_api.ProtocolContext):
     if wells_needing_water:
         p20.pick_up_tip()
         for vol, dest in zip(water_vols, wells_needing_water):
-            p20.transfer(vol, temp_tubes['A2'], dest, new_tip='never')
+            p20.transfer(vol, temp_tubes[water_loc], dest, new_tip='never')
         p20.drop_tip()
 
     # Now distribute master mix to each well
@@ -210,20 +222,57 @@ def run(protocol: protocol_api.ProtocolContext):
     7. inactivation_temp, 10min
     8. 4C, 1 min, pause to open lid
     '''    
-    tc_mod.set_lid_temperature(temperature=(inactivation_temp + 10))
-    tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=900, block_max_volume=reaction_vol) # 15 min
-    for i in range(num_cycles):
-        tc_mod.set_block_temperature(temperature=reaction_temp, hold_time_seconds=90, block_max_volume=reaction_vol) # 1.5 min
-        tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=180, block_max_volume=reaction_vol) # 3 min
-    tc_mod.set_block_temperature(temperature=ligation_temp, hold_time_seconds=1200, block_max_volume=reaction_vol) # 20 min
-    tc_mod.set_block_temperature(temperature=50, hold_time_seconds=300, block_max_volume=reaction_vol) # 10 min
-    tc_mod.set_block_temperature(temperature=inactivation_temp, hold_time_seconds=600, block_max_volume=reaction_vol) # 10 min
-    tc_mod.set_block_temperature(temperature=4, hold_time_seconds=60) # 1 min
-    tc_mod.deactivate_lid() # Deactivate lid to allow for pipetting
-    protocol.delay(seconds=5) # Wait for lid to cool down
 
+    # --- THERMOCYCLER PROTOCOL (use new variables) ---
+    tc_mod.close_lid()
+    tc_mod.set_lid_temperature(temperature=(float(tc_step7_temp) + 10))
+
+    # Step 1
+    tc_mod.set_block_temperature(
+        temperature=float(tc_step1_temp),
+        hold_time_seconds=int(tc_step1_time),
+        block_max_volume=reaction_vol
+    )
+    # Step 2 & 3 cycling
+    for i in range(int(tc_step4_cycles)):
+        tc_mod.set_block_temperature(
+            temperature=float(tc_step2_temp),
+            hold_time_seconds=int(tc_step2_time),
+            block_max_volume=reaction_vol
+        )
+        tc_mod.set_block_temperature(
+            temperature=float(tc_step3_temp),
+            hold_time_seconds=int(tc_step3_time),
+            block_max_volume=reaction_vol
+        )
+    # Step 5
+    tc_mod.set_block_temperature(
+        temperature=float(tc_step5_temp),
+        hold_time_seconds=int(tc_step5_time),
+        block_max_volume=reaction_vol
+    )
+    # Step 6
+    tc_mod.set_block_temperature(
+        temperature=float(tc_step6_temp),
+        hold_time_seconds=int(tc_step6_time),
+        block_max_volume=reaction_vol
+    )
+    # Step 7
+    tc_mod.set_block_temperature(
+        temperature=float(tc_step7_temp),
+        hold_time_seconds=int(tc_step7_time),
+        block_max_volume=reaction_vol
+    )
+    # Step 8
+    tc_mod.set_block_temperature(
+        temperature=float(tc_step8_temp),
+        hold_time_seconds=int(tc_step8_time)
+    )
+    tc_mod.deactivate_lid()
+    protocol.delay(seconds=5)
     pause("Thermocycler protocol complete, holding at 4 Celsius. Press continue to open thermocycler lid.")
-    tc_mod.open_lid() # Open lid for pipetting
+    protocol.set_rail_lights(True)
+    tc_mod.open_lid()
 
 def custom_mix(pipette, well, mixreps=3, vol=20, z_asp=1, z_disp_source_mix=8, z_disp_destination=8):
     # Save original flow rates
