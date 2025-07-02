@@ -28,8 +28,9 @@ def run(ctx: protocol_api.ProtocolContext):
     for i, (oligo, vol) in enumerate(oligos):
         p300.transfer(vol, water_res['A3'].bottom(3), oligo_tubes[oligo], new_tip='never', drop_tip=False)
         custom_mix(p300, oligo_tubes[oligo], mixreps=10, vol=(vol * 0.75), z_asp=1, z_disp_source_mix=8, z_disp_destination=8)
-        p300.drop_tip()
-        p300.pick_up_tip()
+        if i < len(oligos) - 1:
+            p300.drop_tip()
+            p300.pick_up_tip()
     p300.drop_tip()
 
     for oligo in vol_per_oligo:
