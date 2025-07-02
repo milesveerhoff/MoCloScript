@@ -10,11 +10,23 @@ TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "template.py")
 # Store entry widgets for later access
 oligo_entry_widgets = []
 
+def select_all(event):
+    event.widget.select_range(0, tk.END)
+    event.widget.icursor(tk.END)
+    return 'break'
+
 def update_oligo_entries(*args):
     global oligo_entry_widgets
     oligo_entry_widgets = []
     for widget in oligo_entries_frame.winfo_children():
         widget.destroy()
+    # Add a single label at the top
+    tk.Label(
+        oligo_entries_frame,
+        text="Enter the volume of molecular grade water needed for each oligo:",
+        anchor="center",
+        justify="center"
+    ).pack(pady=(0, 8), fill="x")
     try:
         count = int(oligos_entry.get())
         if count < 1:
@@ -25,12 +37,15 @@ def update_oligo_entries(*args):
         count = 1
     for i in range(count):
         slot = f"{chr(65 + i // 6)}{i % 6 + 1}"
-        label = tk.Label(oligo_entries_frame, text=f"Volume needed for oligo in slot {slot}:", anchor="center", justify="center")
-        label.pack(pady=(2,0))
-        entry = tk.Entry(oligo_entries_frame, justify="center", width=20)
-        entry.insert(0, "300")
-        entry.pack(pady=(0,6))
+        row = tk.Frame(oligo_entries_frame)
+        row.pack(fill="x", pady=(0, 6))
+        label = tk.Label(row, text=slot, width=6, anchor="e", justify="right")
+        label.pack(side="left")
+        entry = tk.Entry(row, justify="center", width=20)
+        entry.insert(0, "---")
+        entry.pack(side="left", padx=(6, 0))
         entry.bind("<KeyRelease>", lambda e: update_total_water())
+        entry.bind("<FocusIn>", select_all)  # Highlight text on focus
         oligo_entry_widgets.append((slot, entry))
     update_total_water()
     scrollable_frame.update_idletasks()
@@ -48,7 +63,7 @@ def update_total_water():
     total_water = total_oligo_volume + (45 * num_oligos)
     total_water_ml = total_water / 1000
     total_water_label.config(
-        text=f"Total water needed: {total_water:.2f} µL ({total_water_ml:.3f} mL)"
+        text=f"Minimum molecular grade water needed: {total_water:.2f} µL ({total_water_ml:.3f} mL)\n\nNote: water in falcon tube should not exceed 20 mL to avoid contamination.",
     )
 
 def generate_script():
@@ -118,8 +133,8 @@ def save_script():
 
 # --- Main window ---
 root = tk.Tk()
-root.title("Protocol Generator")
-root.geometry("420x450")
+root.title("Primer Pal Oligo Dilution Script Generator")
+root.geometry("450x450")
 
 # --- Scrollable Frame Setup ---
 main_frame = tk.Frame(root)
@@ -150,18 +165,26 @@ tk.Label(
 ).pack(pady=(10, 0), fill="x")
 
 oligos_entry = tk.Entry(scrollable_frame, justify="center")
-oligos_entry.insert(0, "1")  # Default value to 1
+oligos_entry.insert(0, "-")  
 oligos_entry.pack(pady=5)
 oligos_entry.configure(width=20)
+
+tk.Label(
+    scrollable_frame,
+    text="Protocol will use one p300 and one p20 tip for each oligo.",
+    anchor="center",
+    justify="center"
+).pack(pady=(10, 0), fill="x")
 
 oligo_entries_frame = tk.Frame(scrollable_frame)
 oligo_entries_frame.pack(pady=5)
 
 oligos_entry.bind("<KeyRelease>", update_oligo_entries)
+oligos_entry.bind("<FocusIn>", select_all)  # Highlight text on focus
 
 total_water_label = tk.Label(
     scrollable_frame,
-    text="Total water needed: 0.00 µL",
+    text="Minimum molecular grade water needed: 0 µL (0.000 mL)\n\nNote: water in falcon tube should not exceed 20 mL to avoid contamination.",
     fg="blue",
     anchor="center",
     justify="center"
@@ -182,6 +205,7 @@ tk.Label(
 filename_entry = tk.Entry(file_frame, justify="center", width=22)
 filename_entry.insert(0, "oligo_dilution.py")
 filename_entry.pack(side="left", padx=(0, 5))
+filename_entry.bind("<FocusIn>", select_all)  # Highlight text on focus
 
 save_button = tk.Button(
     file_frame,
