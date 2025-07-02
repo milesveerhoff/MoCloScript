@@ -1,6 +1,6 @@
 import opentrons.execute # type: ignore
 from opentrons import protocol_api # type: ignore
-metadata = {"apiLevel": "2.22", "description": '''Primer Pal oligo dilution!'''}
+metadata = {"apiLevel": "2.22", "description": '''Primer Pal oligo dilution! Note: water in tube should not exceed 20 mL to avoid contamination. Use 50 mL falcon tube in upper left large slot of rack, protocol will use one p300 and one p20 tip per each oligo. '''}
 
 vol_per_oligo = {oligo_values}  # type: ignore
 
@@ -20,24 +20,26 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Transfer water to working tubes
     p300.pick_up_tip()
-    p300.distribute(45, water_res['A1'], [working_tubes[loc] for loc in working_tubes_loc], new_tip='never')
-    p300.drop_tip()
+    for oligo in vol_per_oligo:
+        p300.transfer(45, water_res['A3'].bottom(3), working_tubes[oligo], new_tip='never', drop_tip=False)
 
-    for oligo, vol in vol_per_oligo.items():
-        # Transfer water to oligo tubes
-        p300.pick_up_tip()
-        p300.transfer(vol, water_res['A1'], oligo_tubes[oligo], new_tip='never', drop_tip=False)
-        custom_mix(p300, oligo_tubes[oligo], mixreps=3, vol=(vol * 0.75), z_asp=1, z_disp_source_mix=8, z_disp_destination=8)
+    # Transfer water to oligo tubes, reusing tip for first oligo
+    oligos = list(vol_per_oligo.items())
+    for i, (oligo, vol) in enumerate(oligos):
+        p300.transfer(vol, water_res['A3'].bottom(3), oligo_tubes[oligo], new_tip='never', drop_tip=False)
+        custom_mix(p300, oligo_tubes[oligo], mixreps=10, vol=(vol * 0.75), z_asp=1, z_disp_source_mix=8, z_disp_destination=8)
         p300.drop_tip()
+        p300.pick_up_tip()
+    p300.drop_tip()
 
     for oligo in vol_per_oligo:
         # Transfer oligo to working tubes
         p20.pick_up_tip()
-        p20.transfer(5, oligo_tubes[oligo], working_tubes[working_tubes_loc[0]], new_tip='never', drop_tip=False)
-        custom_mix(p20, working_tubes[working_tubes_loc[0]], mixreps=3, vol=15, z_asp=1, z_disp_source_mix=8, z_disp_destination=8)
+        p20.transfer(5, oligo_tubes[oligo], working_tubes[oligo], new_tip='never', drop_tip=False)
+        custom_mix(p20, working_tubes[oligo], mixreps=5, vol=15, z_asp=1, z_disp_source_mix=4, z_disp_destination=4)
         p20.drop_tip()
     
-def custom_mix(pipette, well, mixreps=3, vol=20, z_asp=1, z_disp_source_mix=8, z_disp_destination=8):
+def custom_mix(pipette, well, mixreps=10, vol=20, z_asp=1, z_disp_source_mix=8, z_disp_destination=8):
     # Save original flow rates
     orig_asp = pipette.flow_rate.aspirate
     orig_disp = pipette.flow_rate.dispense
