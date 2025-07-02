@@ -225,7 +225,7 @@ def display_confirmation_window(
     # --- Per-insert volume input section (FIRST) ---
     tk.Label(
         scrollable_frame,
-        text="Volumes need to be manually calculated for 25/50 fmol of each fragment, each should be >1µL:",
+        text="Volumes (µL) need to be manually calculated for 25/50 fmol of each fragment, each should be ≥1 µL for pipetting:",
         anchor="w", justify="left"
     ).pack(pady=5, fill="x", anchor="w")
     insert_volume_entries = {}
@@ -234,7 +234,7 @@ def display_confirmation_window(
         frame.pack(fill="x", pady=2, anchor="w")
         bin_val = bin_dict.get(insert_name, "")
         label_text = f"({bin_val}) {insert_name}" if bin_val != "" else insert_name
-        tk.Label(frame, text=label_text, width=40, anchor="w", justify="left").pack(side="left", padx=(0, 5))
+        tk.Label(frame, text=label_text, width=50, anchor="w", justify="left").pack(side="left", padx=(0, 5))
         entry = tk.Entry(frame, width=10, justify="left")
         entry.insert(0, str(vol_per_insert_dict[insert_name]))
         entry.pack(side="left", padx=(0, 5))
@@ -242,8 +242,8 @@ def display_confirmation_window(
 
     # --- Master mix per reaction input section (SECOND) ---
     mm_per_reaction_frame = tk.Frame(scrollable_frame)
-    mm_per_reaction_frame.pack(fill="x", pady=2, anchor="w")
-    mm_per_reaction_label = tk.Label(mm_per_reaction_frame, text="Master Mix/Buffer per reaction (µL):", anchor="w", justify="left", width=40)
+    mm_per_reaction_frame.pack(fill="x", pady=(22,2), anchor="w")
+    mm_per_reaction_label = tk.Label(mm_per_reaction_frame, text="Master Mix/Buffer per reaction (µL):", anchor="w", justify="left", width=50)
     mm_per_reaction_label.pack(side="left", padx=(0, 5))
     mm_per_reaction_entry = tk.Entry(mm_per_reaction_frame, width=10, justify="left")
     mm_per_reaction_entry.insert(0, "5")  # Default to 5 µL
@@ -257,7 +257,7 @@ def display_confirmation_window(
         text="Enzyme per reaction (µL):",
         anchor="w",
         justify="left",
-        width=40
+        width=50
     )
     enzyme_per_reaction_label.pack(side="left", padx=(0, 5))
     enzyme_per_reaction_entry = tk.Entry(enzyme_per_reaction_frame, width=10, justify="left")
@@ -267,7 +267,7 @@ def display_confirmation_window(
     # Input box for total reaction volume
     reaction_vol_frame = tk.Frame(scrollable_frame)
     reaction_vol_frame.pack(fill="x", pady=2, anchor="w")
-    reaction_vol_label = tk.Label(reaction_vol_frame, text="Reaction volume (µL):", anchor="w", justify="left", width=40)
+    reaction_vol_label = tk.Label(reaction_vol_frame, text="Reaction volume (µL):", anchor="w", justify="left", width=50)
     reaction_vol_label.pack(side="left", padx=(0, 5))
     reaction_vol_entry = tk.Entry(reaction_vol_frame, width=10, justify="left")
     reaction_vol_entry.insert(0, "15")
@@ -284,11 +284,15 @@ def display_confirmation_window(
             mm_per_reaction = float(mm_per_reaction_entry.get())
         except Exception:
             mm_per_reaction = 6.0
+        try:
+            enzyme_per_reaction = float(enzyme_per_reaction_entry.get())
+        except Exception:
+            enzyme_per_reaction = 1.0
         n_reactions = len(constructs)
         water_per_reaction = []
         for construct in constructs:
             total_insert_vol = sum(safe_float(insert_volume_entries[insert]) for insert in construct)
-            water_vol = reaction_vol - (mm_per_reaction + total_insert_vol)
+            water_vol = reaction_vol - (mm_per_reaction + enzyme_per_reaction + total_insert_vol)
             water_per_reaction.append(round(water_vol,2))
         total_mm = mm_per_reaction * n_reactions
         mm_info_var.set(
@@ -300,6 +304,7 @@ def display_confirmation_window(
     mm_per_reaction_entry.bind("<KeyRelease>", update_mm_info)
     for entry in insert_volume_entries.values():
         entry.bind("<KeyRelease>", update_mm_info)
+    enzyme_per_reaction_entry.bind("<KeyRelease>", update_mm_info)
     update_mm_info()  # Initialize with default
 
     mm_info_label = tk.Label(
@@ -318,7 +323,7 @@ def display_confirmation_window(
 
     tc_steps_label = tk.Label(
         tc_steps_frame,
-        text="Thermocycler Step Settings [Temperature in °C] [Time in seconds, enter 0 to skip]:",
+        text="Thermocycler Settings [°C] [Seconds], input 0 seconds to skip:",
         anchor="w",
         justify="left",
         pady=2
@@ -331,11 +336,11 @@ def display_confirmation_window(
     def add_tc_step(frame, label_text, temp_default, time_default, temp_key, time_key):
         step_frame = tk.Frame(tc_steps_frame)
         step_frame.pack(fill="x", pady=2, anchor="w")
-        tk.Label(step_frame, text=label_text, width=38, anchor="w", justify="left").pack(side="left")
-        temp_entry = tk.Entry(step_frame, width=8, justify="right")
+        tk.Label(step_frame, text=label_text, width=50, anchor="w", justify="left").pack(side="left")
+        temp_entry = tk.Entry(step_frame, width=5, justify="right")
         temp_entry.insert(0, temp_default)
-        temp_entry.pack(side="left", padx=(0, 5))
-        time_entry = tk.Entry(step_frame, width=8, justify="right")
+        temp_entry.pack(side="left", padx=(5, 5))
+        time_entry = tk.Entry(step_frame, width=10, justify="right")
         time_entry.insert(0, time_default)
         time_entry.pack(side="left", padx=(0, 5))
         tc_step_entries[temp_key] = temp_entry
@@ -344,27 +349,27 @@ def display_confirmation_window(
     # Step 1: Digestion, 15 min
     add_tc_step(tc_steps_frame, "Step 1: Initial Digestion", "37", "900", 'step1_temp', 'step1_time')
     # Step 2: Digestion, 1.5 min
-    add_tc_step(tc_steps_frame, "Step 2: Digestion", "37", "90", 'step2_temp', 'step2_time')
+    add_tc_step(tc_steps_frame, "       Step 2: Digestion", "37", "90", 'step2_temp', 'step2_time')
     # Step 3: Annealing & Ligation, 3 min
-    add_tc_step(tc_steps_frame, "Step 3: Annealing & Ligation", "16", "180", 'step3_temp', 'step3_time')
+    add_tc_step(tc_steps_frame, "       Step 3: Annealing & Ligation", "16", "180", 'step3_temp', 'step3_time')
 
     # Step 4: Number of cycles (for Steps 2 & 3)
     step4_frame = tk.Frame(tc_steps_frame)
     step4_frame.pack(fill="x", pady=2, anchor="w")
-    tk.Label(step4_frame, text="Step 4: Cycles (Step 2-3)", width=38, anchor="w", justify="left").pack(side="left")
-    step4_cycles = tk.Entry(step4_frame, width=8, justify="right")
+    tk.Label(step4_frame, text= "       Cycles (Steps 2-3)", width=50, anchor="w", justify="left").pack(side="left")
+    step4_cycles = tk.Entry(step4_frame, width=10, justify="right")
     step4_cycles.insert(0, "25")
-    step4_cycles.pack(side="left", padx=(0, 5))
+    step4_cycles.pack(side="left", padx=(5, 5))
     tc_step_entries['step4_cycles'] = step4_cycles
 
     # Step 5: Ligation, 20 min
-    add_tc_step(tc_steps_frame, "Step 5: Final Ligation", "16", "1200", 'step5_temp', 'step5_time')
+    add_tc_step(tc_steps_frame, "Step 4: Final Ligation", "16", "1200", 'step5_temp', 'step5_time')
     # Step 6: 50°C, 10 min
-    add_tc_step(tc_steps_frame, "Step 6: Digestion & Ligase Inact.", "50", "300", 'step6_temp', 'step6_time')
+    add_tc_step(tc_steps_frame, "Step 5: Digestion & Ligase Inact.", "50", "300", 'step6_temp', 'step6_time')
     # Step 7: Inactivation, 10 min
-    add_tc_step(tc_steps_frame, "Step 7: Inactivation", "65", "600", 'step7_temp', 'step7_time')
+    add_tc_step(tc_steps_frame, "Step 6: Final Inactivation", "65", "600", 'step7_temp', 'step7_time')
     # Step 8: 4°C, 1 min
-    add_tc_step(tc_steps_frame, "Step 8: Cool & Hold", "4", "60", 'step8_temp', 'step8_time')
+    add_tc_step(tc_steps_frame, "Step 7: Cool & Hold", "4", "60", 'step8_temp', 'step8_time')
 
     # --- Synchronize temperature entries for steps 1+2 and 3+5 ---
     def sync_step1_step2_temp(*args):
@@ -418,11 +423,11 @@ def display_confirmation_window(
 
     file_name_row = tk.Frame(file_name_frame)
     file_name_row.pack(side="top", anchor="w", fill="x", pady=(0, 2))
-    file_name_entry = tk.Entry(file_name_row, width=40, justify="left")
+    file_name_entry = tk.Entry(file_name_row, width=45, justify="left")
     file_name_entry.insert(0, "saved_protocol.py")
     file_name_entry.pack(side="left", padx=(0, 5))
-    browse_button = tk.Button(file_name_row, text="Browse", command=browse_save_file)
-    browse_button.pack(side="left")
+    browse_button = tk.Button(file_name_row, text="Browse", width=10, command=browse_save_file)
+    browse_button.pack(side="left", padx=5)
 
     # Confirm button to generate the script (extra space above)
     confirm_button = tk.Button(
@@ -494,9 +499,10 @@ def generate_script(
 
     # Calculate water needed for each well
     water_per_reaction = []
+    enzyme_per_reaction = safe_float(enzyme_per_reaction_entry, 1)
     for construct in constructs:
         total_insert_vol = sum(float(vol_per_insert_dict.get(insert, 1)) for insert in construct)
-        water_vol = reaction_vol - (mm_per_reaction + total_insert_vol)
+        water_vol = reaction_vol - (mm_per_reaction + enzyme_per_reaction + total_insert_vol)
         water_per_reaction.append(round(water_vol, 2))  # Round to 2
 
     # Calculate number of tips needed as in template.py

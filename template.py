@@ -162,7 +162,7 @@ def run(protocol: protocol_api.ProtocolContext):
     for index, construct_tube in enumerate(construct_tubes):
         construct_inserts = constructs[index]
         total_insert_vol = sum(vol_per_insert_dict.get(insert, 5) for insert in construct_inserts)
-        water_needed = reaction_vol - (vol_master_mix_per_reaction[index] + total_insert_vol)
+        water_needed = reaction_vol - (vol_master_mix_per_reaction[index] + float(enzyme_per_reaction) + total_insert_vol)
         if water_needed > 0:
             wells_needing_water.append(tc_plate[construct_tube])
             water_vols.append(water_needed)
