@@ -257,7 +257,7 @@ tk.Label(
 ).pack(side="left", padx=(0, 5))
 
 filename_entry = tk.Entry(file_frame, justify="center", width=22)
-filename_entry.insert(0, "oligo_dilution.py")
+filename_entry.insert(0, "dilution.py")
 filename_entry.pack(side="left", padx=(0, 5))
 filename_entry.bind("<FocusIn>", select_all)  # Highlight text on focus
 

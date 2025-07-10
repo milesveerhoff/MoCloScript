@@ -1,8 +1,8 @@
 import opentrons.execute # type: ignore
 from opentrons import protocol_api # type: ignore
-metadata = {"apiLevel": "2.22", "description": 'Primer Pal oligo dilution! Note: water in tube should not exceed 20 mL to avoid contamination. Use 50 mL falcon tube in upper left large slot of rack, protocol will use one p300 and one p20 tip per each oligo.'}
+metadata = {"apiLevel": "2.22", "description": ''}
 
-vol_per_oligo = {'A1': 300.0, 'A2': 300.0, 'A3': 300.0, 'A4': 300.0, 'A5': 300.0}  # type: ignore
+vol_per_oligo = {oligo_values}  # type: ignore
 
 def run(ctx: protocol_api.ProtocolContext):
     # Load labware
